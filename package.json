@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "test": "node tests/assistant.test.cjs",
-    "check": "tsc --noEmit && node tests/assistant.test.cjs"
+    "test": "node tests/assistant.test.cjs && node tests/ui-contract.test.cjs",
+    "check": "tsc --noEmit && npm test"
   },
   "dependencies": {
     "next": "^15.5.0",
