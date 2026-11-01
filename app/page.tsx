@@ -84,14 +84,38 @@ export default function Home(){
  async function uploadMedia(file?:File){if(!file)return;const type:'image'|'video'|null=file.type.startsWith('video/')?'video':file.type.startsWith('image/')?'image':null;if(!type){flash('Choose an image or video file.','bad');return;}if(file.size>50*1024*1024){flash('Starter limit: 50 MB per media file.','bad');return;}
   try{setLoading(true);let url='';if(!demo&&client&&session){const key=`${session.user.id}/${crypto.randomUUID()}-${file.name.replace(/[^a-z0-9.\-_]/gi,'_')}`;const {error}=await client.storage.from('omnipost-media').upload(key,file,{contentType:file.type});if(error)throw error;url=client.storage.from('omnipost-media').getPublicUrl(key).data.publicUrl;}else {if(file.size>1.8*1024*1024){url=URL.createObjectURL(file);flash('Large demo file previews are temporary. Live storage is needed to retain them.','info')}else url=await new Promise<string>((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result));r.onerror=rej;r.readAsDataURL(file)});}const asset={name:file.name,url,type};setAssets(v=>{const n=[asset,...v];if(demo)localStorage.setItem('omnipost-demo-assets',JSON.stringify(n.filter(x=>!x.url.startsWith('blob:'))));return n});setDraft(d=>({...d,mediaUrl:url,mediaName:file.name,mediaType:type}));flash('Media added to your post','ok');}
   catch(e){flash('Upload failed: '+String(e),'bad')}finally{setLoading(false)}}
- async function savePost(status:PostStatus){if(!draft.caption.trim()&&!draft.title.trim()&&!draft.mediaUrl){flash('Add a caption, title, or media file first.','bad');return;}if(status==='scheduled'&&!draft.scheduledAt){flash('Select a publishing date and time.','bad');return;}if(status==='scheduled'&&new Date(draft.scheduledAt).getTime()<=Date.now()){flash('Schedule for a future date and time.','bad');return;}
-  if(['scheduled','queued'].includes(status)&&!demo&&!draft.accountIds.length){flash('Select at least one connected social account.','bad');return;}if(status==='queued'&&demo){flash('Publishing is unavailable in demo mode. Connect approved platform APIs to publish.','bad');return;}
-  if(!health.server&&!['draft','review'].includes(status)){flash('Publishing needs connected social accounts and protected server credentials. Your drafts and AI content planner are available now.','bad');return;}const newItem={...draft,status,brand,updatedAt:new Date().toISOString(),scheduledAt:status==='scheduled'?new Date(draft.scheduledAt).toISOString():draft.scheduledAt};
-  try{setLoading(true);if(demo){const result=[newItem,...posts.filter(p=>p.id!==newItem.id)];setPosts(result);localStorage.setItem('omnipost-demo-posts',JSON.stringify(result));flash(status==='scheduled'?'Saved to the local calendar. Automatic posting requires live integrations.':'Draft saved locally','ok');}
-   else if(!health.server&&client&&session){const row={user_id:session.user.id,data:newItem,status,scheduled_at:null};const existing=posts.some(p=>p.id===draft.id);const {error}=existing?await client.from('omnipost_posts').update(row).eq('id',draft.id).eq('user_id',session.user.id):await client.from('omnipost_posts').insert(row);if(error)throw error;await loadLive(client,session.access_token);flash('Private draft saved in Supabase','ok');}else if(posts.some(p=>p.id===draft.id)){await authApi('/api/posts','PATCH',{...newItem,id:draft.id});await loadLive(client!,session.access_token);flash('Post updated','ok');}
-   else{const save=await authApi('/api/posts','POST',newItem);if(status==='queued'){const result=await authApi('/api/publish','POST',{postId:save.id});flash('Publishing attempted. Check post status for per-platform results.','info');}else flash('Post saved to your workspace','ok');await loadLive(client!,session.access_token);}
-   setDraft(fresh());setView('posts');
-  }catch(e){flash('Save failed: '+String(e),'bad')}finally{setLoading(false)}}
+ async function savePost(status:PostStatus){
+  if(loading)return;
+  if(!draft.caption.trim()&&!draft.title.trim()&&!draft.mediaUrl){flash('Add a caption, title, or image/video first.','bad');return;}
+  if(status==='scheduled'&&(!draft.scheduledAt||Date.parse(draft.scheduledAt)<=Date.now()+60000)){flash('Choose a publishing time in the future.','bad');return;}
+  const existing=posts.some(p=>p.id===draft.id);
+  const timestamp=status==='scheduled'?new Date(draft.scheduledAt).toISOString():draft.scheduledAt;
+  const updated={...draft,status,brand,scheduledAt:timestamp,updatedAt:new Date().toISOString()};
+  const isDelivery=status==='queued'||status==='scheduled'&&!!selectedManaged.length;
+  if(status==='queued'&&!selectedManaged.length){flash('Select a connected Upload-Post account in the composer, then press Publish now. You can still save a draft without a connected account.','bad');return;}
+  if(isDelivery&&!managed.configured){flash('Connect the Upload-Post API from Social Accounts first. Social passwords are never needed.','bad');setView('accounts');return;}
+  if(isDelivery&&!activeManaged){flash('Choose your connected social profile.','bad');return;}
+  if(isDelivery&&status==='queued'&&!confirm('Send this post now to '+selectedManaged.join(', ')+' through your Upload-Post profile "'+activeManaged.username+'"?'))return;
+  if(status==='scheduled'&&!isDelivery&&!confirm('No connected publishing account is selected. Save this on your calendar as a MANUAL reminder? It will not automatically post to social media.'))return;
+  try{
+   setLoading(true);
+   let message='';
+   if(isDelivery){
+    const result=await authApi('/api/managed-social/publish','POST',{post:updated,mode:status==='queued'?'now':'schedule',profile:activeManaged!.username,platforms:selectedManaged});
+    if(!result.accepted)throw Error('Provider did not confirm this request.');
+    message=status==='scheduled'?'Upload-Post accepted your scheduled post. Open your Content Library to monitor it.':result.status==='published'?'Provider confirmed the post was published.':'Upload-Post accepted your post. Publishing may still be processing; check its status.';
+    if(result.warning)message=result.warning;
+   }else{
+    const data={...updated,status,publishMode:status==='scheduled'?'planner':'none'};
+    const result=await authApi('/api/posts',existing?'PATCH':'POST',data);
+    message=result.message||'Saved successfully.';
+   }
+   if(client&&session)await loadLive(client,session.access_token);
+   setDraft(fresh());setPostFilter('all');setView(status==='scheduled'?'calendar':'posts');
+   flash(message,'ok');
+  }catch(e){flash('Could not save or submit your post: '+(e instanceof Error?e.message:String(e)),'bad')}
+  finally{setLoading(false)}
+ }
  function editPost(p:ContentPost){setDraft({...p,scheduledAt:p.scheduledAt?inputDatetime(new Date(p.scheduledAt)):'',overrides:{...p.overrides},platforms:[...p.platforms],accountIds:[...p.accountIds]});setView('compose')}
  function exportCalendar(){const stamp=(s:string)=>new Date(s).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');const esc=(s:string)=>s.replace(/\\/g,'\\\\').replace(/,/g,'\\,').replace(/;/g,'\\;').replace(/\n/g,'\\n');const events=posts.filter(p=>p.scheduledAt&&p.status==='scheduled').map(p=>['BEGIN:VEVENT',`UID:${p.id}@omnipost`,`DTSTAMP:${stamp(new Date().toISOString())}`,`DTSTART:${stamp(p.scheduledAt)}`,`DTEND:${stamp(new Date(new Date(p.scheduledAt).getTime()+15*60000).toISOString())}`,`SUMMARY:${esc(p.title||'Social media post')}`,`DESCRIPTION:${esc(p.caption)}`,'END:VEVENT'].join('\r\n'));const content=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//OmniPost AI//Content Calendar//EN',...events,'END:VCALENDAR'].join('\r\n');const url=URL.createObjectURL(new Blob([content],{type:'text/calendar'}));const a=document.createElement('a');a.href=url;a.download='omnipost-calendar.ics';a.click();URL.revokeObjectURL(url);flash('Calendar exported','ok')}
  async function deletePost(p:ContentPost){if(!confirm('Delete this item?'))return;try{if(demo){const next=posts.filter(x=>x.id!==p.id);setPosts(next);localStorage.setItem('omnipost-demo-posts',JSON.stringify(next))}else if(!health.server&&client&&session&&['draft','review'].includes(p.status)){const {error}=await client.from('omnipost_posts').delete().eq('id',p.id).eq('user_id',session.user.id);if(error)throw error;await loadLive(client,session.access_token);}else{await authApi('/api/posts?id='+encodeURIComponent(p.id),'DELETE');await loadLive(client!,session.access_token)}flash('Post deleted','ok')}catch(e){flash(String(e),'bad')}}
