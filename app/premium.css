@@ -143,3 +143,21 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 @media(max-width:680px){.omni-social-guide{padding:16px!important}.omni-social-guide-head{flex-wrap:wrap}.omni-setup-steps>div{padding:13px}.omni-guide-actions>*{flex-basis:100%}.omni-guide-actions .primary-btn,.omni-guide-actions .outline-btn{justify-content:center}}
 
 .omni-ai-error{margin:10px 0 0;display:flex;gap:9px;align-items:flex-start;color:#ffc1c8;font-size:12px;line-height:1.5;border:1px solid #af5e7e;background:#42203490;border-radius:10px;padding:11px}.omni-ai-error svg{flex:0 0 auto;margin-top:2px}
+
+
+/* Hosted, provider-authorized social connection onboarding */
+.omni-simple-social{border:1px solid #7963b4!important;background:radial-gradient(ellipse at top right,#3a2e715a,transparent 60%),linear-gradient(145deg,#221c3f,#171d36)!important;box-shadow:0 14px 45px #07071368!important;padding:24px!important;margin-bottom:24px}
+.omni-simple-kicker{display:inline-flex;align-items:center;gap:8px;background:#8868d72a;border:1px solid #8065b1;color:#cfb9ff;font-size:10px;letter-spacing:1.25px;font-weight:850;padding:8px 11px;border-radius:99px;margin-bottom:14px}
+.omni-simple-social h3{font-size:23px;line-height:1.25;letter-spacing:-.7px;margin:0 0 10px;color:#fff}
+.omni-simple-social>p{font-size:12px;color:#c4bbdc;max-width:800px;line-height:1.7}
+.omni-simple-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.omni-simple-steps>div{border:1px solid #5a5077;border-radius:13px;padding:15px;background:#10152584;display:flex;align-items:flex-start;gap:11px}
+.omni-simple-steps>div>b{font-size:12px;background:linear-gradient(140deg,#6e5fba,#bb6dee);height:30px;min-width:30px;border-radius:10px;display:grid;place-items:center;color:#fff}
+.omni-simple-steps>div>span{font-size:11px;line-height:1.6;color:#d9d1eb}
+.omni-simple-steps strong{color:#f3e2ff}
+.omni-simple-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.omni-simple-actions>a{display:inline-flex;align-items:center;gap:8px;justify-content:center;min-height:42px;text-decoration:none}
+.omni-simple-note{border-top:1px solid #5b5076;padding-top:14px;margin-top:15px;display:flex;align-items:flex-start;gap:9px;color:#c5bed9;font-size:11px;line-height:1.6}
+.omni-simple-note svg{color:#cbb6ff;flex:0 0 auto;margin-top:2px}
+@media(max-width:1030px){.omni-simple-steps{grid-template-columns:1fr}}
+@media(max-width:680px){.omni-simple-social{padding:17px!important}.omni-simple-social h3{font-size:19px}.omni-simple-actions>a{width:100%}}
