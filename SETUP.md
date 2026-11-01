@@ -24,8 +24,20 @@ Do not paste SMTP credentials or passwords into GitHub, ChatGPT messages, or fro
 
 - Email authentication using existing Supabase Auth (with the deployed app added to allowed redirect URLs by the account owner).
 - Private per-user drafts, document/media uploads (50 MB limit), and content planning.
-- AI Gateway integration for the Omni AI sidebar and AI Content Studio via Vercel OIDC and the configured free-priced `AI_GATEWAY_MODEL`. The assistant uses the signed-in user's Supabase row-level access to read context and save chat history, so a service-role key is **not** needed for AI.
-- Vercel AI Gateway usage can still require team verification and free credit eligibility. If the assistant reports an access or credit error, check https://vercel.com/cz-95a8/~/ai-gateway . No paid subscription or balance top-up was enabled automatically.
+- Free Gemini API connection inside **Settings → AI connection**. The key is validated with Google and encrypted on the server before being saved to a per-user Supabase row; no Vercel billing card is required for eligible free-tier model use. You can test a live response via **Test AI now**.
+- Interactive account and workspace menus, date-to-draft calendar shortcuts, and media deletion with confirmation.
+- Automated source and mocked-AI tests are included in the Vercel production build. Real signed-in browser flows and platform publishing must still be tested with authorized accounts.
+
+## Connect AI without Vercel billing
+
+1. Create a key for a Free Tier project at https://aistudio.google.com/api-keys. No paid tier is required for models that offer Free Tier availability.
+2. In OmniPost **Settings**, paste the key into **AI connection** and press **Connect Gemini**.
+3. OmniPost validates it and encrypts the key under the project's already configured `CREDENTIAL_ENCRYPTION_KEY`. Your plaintext key is not stored in the browser, committed to GitHub, or returned by the settings endpoint.
+4. Press **Test AI now** to verify actual generation or ask the sidebar to draft a post.
+5. Gemini free tier is rate-limited, and free-tier data may be used to improve Google products. Do not include confidential client information without consent.
+
+Vercel AI Gateway remains opt-in for teams with eligible billing; it is disabled by default so its credit-card error no longer blocks OmniPost's Gemini route.
+
 
 ## Social account connection and automatic publishing
 
