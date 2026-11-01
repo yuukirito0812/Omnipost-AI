@@ -1,0 +1,1 @@
+-- AI messages are included in db/schema.sql for isolated OmniPost install. Do not apply legacy 002 migration on shared projects.

@@ -1,0 +1,27 @@
+{
+  "name": "omnipost-ai",
+  "version": "0.3.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "test": "node tests/assistant.test.cjs",
+    "check": "tsc --noEmit && node tests/assistant.test.cjs"
+  },
+  "dependencies": {
+    "next": "^15.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@supabase/supabase-js": "^2.57.0",
+    "lucide-react": "^0.468.0",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0"
+  }
+}
