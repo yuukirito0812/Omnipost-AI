@@ -38,6 +38,18 @@ export async function POST(req:Request){
   if(!connected)return failure(400,'This Upload-Post profile was not found. Refresh connected accounts, then select one.');
   const invalid=selected.filter(p=>{const a=connected.social_accounts?.[p];return !a||typeof a!=='object'||a.reauth_required===true});
   if(invalid.length)return failure(400,'These networks are not connected or need reauthorization: '+invalid.join(', ')+'. Connect them in Upload-Post and refresh.');
+  let facebookPageId='';
+  if(selected.includes('facebook')){
+   const pagesResponse=await fetch(origin+'/api/uploadposts/facebook/pages?profile='+encodeURIComponent(profile),{headers,cache:'no-store',signal:AbortSignal.timeout(12000)});
+   const pageData:any=await pagesResponse.json().catch(()=>({}));
+   const pages=pagesResponse.ok&&Array.isArray(pageData.pages)?pageData.pages.filter((v:any)=>v.id):[];
+   if(!pages.length)return failure(400,'Your Facebook login is connected but no Facebook Page is available to post to. Create or reconnect a Page in Upload-Post, then refresh.');
+   if(pages.length===1)facebookPageId=String(pages[0].id);
+   else {
+    facebookPageId=String(payload.facebookPageId||'');
+    if(!pages.some((p:any)=>String(p.id)===facebookPageId))return failure(400,'Choose a Facebook Page for this post. Available Pages: '+pages.map((p:any)=>String(p.name||p.id)).join(', ').slice(0,180));
+   }
+  }
   if(post.mediaType==='video'&& !post.mediaUrl)return failure(400,'Please upload a video first.');
   if(!post.mediaUrl&&selected.some(p=>!['facebook','x'].includes(p)))return failure(400,'Text-only posts can be sent to Facebook Pages and X. Add a photo or video for your other selected platforms.');
   if(post.mediaType==='image'&&selected.includes('youtube'))return failure(400,'YouTube requires video, not a still image. Remove YouTube or attach a video.');
@@ -53,6 +65,7 @@ export async function POST(req:Request){
   for(const p of selected)form.append('platform[]',p);
   const caption=[post.caption.trim(),post.cta.trim(),post.tags.trim()].filter(Boolean).join('\n\n')||post.title.trim();
   form.set('title',post.mediaType==='video'&&selected.includes('youtube')?(post.title.trim()||caption.slice(0,95)):caption);
+  if(facebookPageId)form.set('facebook_page_id',facebookPageId);
   if(post.mediaType==='video')form.set('description',caption);
   if(post.firstComment?.trim())form.set('first_comment',post.firstComment.slice(0,900));
   if(mode==='schedule')form.set('scheduled_date',new Date(post.scheduledAt).toISOString());
