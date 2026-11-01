@@ -181,3 +181,28 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 .omni-managed-sync-error{font-size:11px;line-height:1.5;border:1px solid #a6546c;background:#5923343a;border-radius:8px;padding:10px;color:#ffcbd3}
 .omni-managed-sync-foot{padding-top:11px;margin-top:14px;border-top:1px solid #3a3550}
 @media(max-width:680px){.omni-managed-sync{padding:14px}.omni-managed-form>div{flex-wrap:wrap}.omni-managed-form input,.omni-managed-form button{flex-basis:100%}}
+
+
+/* OmniPost functional composer and accessible dashboard actions */
+button.omni-stat-action{width:100%;text-align:left;display:flex;flex-direction:column;align-items:stretch;cursor:pointer;color:inherit;font:inherit;transition:transform .18s,box-shadow .18s,border-color .18s}
+button.omni-stat-action:hover,button.omni-stat-action:focus-visible{transform:translateY(-3px);border-color:#967bd0;box-shadow:0 12px 34px #7c51cc2c}
+button.omni-stat-action .stat-top{width:100%}
+.omni-dest-panel{border:1px solid #66518d!important;background:linear-gradient(140deg,#241e3f,#1c1b31)!important;box-shadow:0 16px 38px #05061038}
+.omni-connected-dest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.omni-connected-dest{display:flex;align-items:center;gap:11px;cursor:pointer;min-width:0;border:1px solid #555073;background:#171a2b;border-radius:11px;padding:12px;text-align:left;color:#ede7fc;transition:background .15s,border-color .15s}
+.omni-connected-dest:hover,.omni-connected-dest:focus-visible{border-color:#af8ff4;background:#262144}
+.omni-connected-dest.active{background:#332353;border-color:#c89ff9;box-shadow:0 0 0 2px #a179ef24}
+.omni-connected-dest>span:nth-child(2){flex:1;min-width:0;display:grid;gap:3px}
+.omni-connected-dest strong{font-size:12px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.omni-connected-dest small{font-size:10px;color:#b4b3cb;overflow:hidden;text-overflow:ellipsis}
+.omni-connected-dest .check-circle{flex:0 0 auto}
+.omni-not-connected{display:flex;align-items:center;flex-wrap:wrap;gap:14px;background:#111629;border:1px solid #575179;border-radius:12px;padding:15px}
+.omni-not-connected p{display:flex;align-items:flex-start;gap:9px;flex:1;min-width:190px;font-size:12px;line-height:1.5;color:#d4c9e6;margin:0}
+.omni-not-connected p svg{flex:0 0 auto}
+.omni-not-connected button{white-space:nowrap}
+.omni-dest-warning{display:flex;align-items:center;gap:9px;padding:13px;border-radius:9px;background:#422d2a;color:#ffceb3;border:1px solid #8b6242;font-size:11px;line-height:1.5}
+.omni-publish-truth{background:#121b2c;border:1px solid #434d6b;border-radius:10px;padding:11px 13px;color:#becbe0;font-size:11px;line-height:1.5;margin:12px 0 0}
+.publish-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:stretch}
+.publish-actions button{min-height:43px;justify-content:center}
+.publish-actions .primary-btn{flex:1}
+@media(max-width:710px){.omni-connected-dest-list{grid-template-columns:1fr}.publish-actions button{flex:1 1 100%}.omni-not-connected{align-items:stretch}.omni-not-connected button{width:100%;justify-content:center}}
