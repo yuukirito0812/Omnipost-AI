@@ -110,3 +110,34 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 .channel-disclaimer{margin:9px 0;color:#a7a1c3;font-size:10px;text-align:center}
 @media(max-width:680px){.channel-surface,.channel-tiktok-shell{margin-left:3px;margin-right:3px}.preview-panel .preview-tabs{padding-inline:2px}.channel-tiktok-player{max-width:280px}.omni-logo-mark img{width:40px;height:40px}}
 @media(prefers-reduced-motion:reduce){.nav-item,.primary-btn,.connect-btn,.hero-action{transition:none!important}}
+
+
+/* Secure social platform onboarding */
+.omni-social-guide{margin:20px 0 25px;padding:25px!important;border:1px solid #6b548f!important;background:linear-gradient(130deg,#221b40,#141b2e)!important;scroll-margin-top:100px}
+.omni-social-guide-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.omni-social-guide-head h3{font-size:21px;letter-spacing:-.5px;color:#fff;margin:8px 0}
+.omni-social-guide-head p{font-size:12px;color:#bbb2d6;line-height:1.55;margin:0}
+.omni-step-label{font-size:9px;color:#b99cff;letter-spacing:1.5px;font-weight:900}
+.omni-setup-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:22px 0}
+.omni-setup-steps>div{display:flex;gap:14px;min-width:0;border:1px solid #51456d;border-radius:14px;background:#131627ab;padding:16px}
+.omni-setup-steps>div>span{font-size:13px;color:#d2baff;background:#61499d49;border-radius:10px;height:32px;min-width:32px;display:grid;place-items:center;font-weight:850}
+.omni-setup-steps>div>div{min-width:0}
+.omni-setup-steps h4{font-size:13px;color:#f3ecff;margin:2px 0 9px}
+.omni-setup-steps p{color:#bcb6d2;font-size:11px;line-height:1.58;margin:0 0 11px}
+.omni-setup-steps strong{color:#e1d8f5}
+.omni-step-link{display:inline-flex;align-items:center;gap:5px;color:#cbb7ff;text-decoration:none;font-size:11px;font-weight:740}
+.omni-step-link:hover{text-decoration:underline;color:#f5e5ff}
+.omni-env-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.omni-env-tags code{background:#35294e;color:#f4d5ff;border:1px solid #5d4e82;border-radius:6px;padding:5px 7px;font-size:10px;word-break:break-word}
+.omni-callback-value{display:flex;align-items:center;gap:8px;min-width:0;background:#0b1124;padding:7px;border:1px solid #484a6c;border-radius:8px}
+.omni-callback-value code{font-size:10px;color:#d6e3ff;word-break:break-all;flex:1;min-width:0}
+.omni-callback-value button{display:flex;align-items:center;gap:5px;padding:7px 9px;border:0;border-radius:7px;color:#fff;background:#504486;cursor:pointer;font-size:11px}
+.omni-guide-actions{display:flex;align-items:center;gap:9px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid #55476c;padding-top:17px}
+.omni-readiness{flex:1;display:flex;align-items:center;gap:7px;font-size:11px;color:#c0b2dc;min-width:180px;line-height:1.4}
+.omni-readiness.success{color:#91e8c4}
+.omni-inline-setup{background:none;border:none;color:#bbadff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:inherit;padding:0}
+.account-panel{transition:transform .2s,border-color .2s}
+.account-panel:hover{transform:translateY(-3px);border-color:#7b619c}
+.account-panel .connect-btn:focus-visible{outline:2px solid #d3afff}
+@media(max-width:1050px){.omni-setup-steps{grid-template-columns:1fr}}
+@media(max-width:680px){.omni-social-guide{padding:16px!important}.omni-social-guide-head{flex-wrap:wrap}.omni-setup-steps>div{padding:13px}.omni-guide-actions>*{flex-basis:100%}.omni-guide-actions .primary-btn,.omni-guide-actions .outline-btn{justify-content:center}}
