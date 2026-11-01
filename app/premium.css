@@ -206,3 +206,8 @@ button.omni-stat-action .stat-top{width:100%}
 .publish-actions button{min-height:43px;justify-content:center}
 .publish-actions .primary-btn{flex:1}
 @media(max-width:710px){.omni-connected-dest-list{grid-template-columns:1fr}.publish-actions button{flex:1 1 100%}.omni-not-connected{align-items:stretch}.omni-not-connected button{width:100%;justify-content:center}}
+
+.omni-advanced-social-toggle{display:inline-flex;align-items:center;gap:9px;margin-bottom:22px;padding:11px 15px;font-size:12px;opacity:.8;border-style:dashed}
+.omni-advanced-social-toggle:hover,.omni-advanced-social-toggle:focus-visible{opacity:1;border-color:#b69beb;background:#292143}
+.omni-advanced-social-toggle svg:last-child{margin-left:4px}
+.omni-dest-warning a{color:#d9bbff;text-decoration:underline}
