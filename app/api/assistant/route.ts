@@ -34,8 +34,8 @@ async function getContext(uid:string,db:ReturnType<typeof userDb>){const [{data:
  if(pe||ae||je)throw pe||ae||je;
  return {posts:posts||[],accounts:accounts||[],jobs:jobs||[]};
 }
-export async function GET(req:Request){try{const user=await verifyUser(req);const db=userDb(req);const {data,error}=await db.from('omnipost_ai_messages').select('id,role,content,meta,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(40);if(error)throw error;return Response.json({messages:(data||[]).reverse()});}catch(e){return fail(e,500)}}
-export async function DELETE(req:Request){try{const user=await verifyUser(req);const {error}=await userDb(req).from('omnipost_ai_messages').delete().eq('user_id',user.id);if(error)throw error;return Response.json({ok:true});}catch(e){return fail(e,500)}}
+export async function GET(req:Request){try{const user=await verifyUser(req);const db=userDb(req);const {data,error}=await db.from('omnipost_ai_messages').select('id,role,content,meta,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(40);if(error)throw error;return Response.json({messages:(data||[]).reverse()});}catch(e){return fail(e,e instanceof Error&&/sign in|Invalid or expired/i.test(e.message)?401:500)}}
+export async function DELETE(req:Request){try{const user=await verifyUser(req);const {error}=await userDb(req).from('omnipost_ai_messages').delete().eq('user_id',user.id);if(error)throw error;return Response.json({ok:true});}catch(e){return fail(e,e instanceof Error&&/sign in|Invalid or expired/i.test(e.message)?401:500)}}
 export async function POST(req:Request){
  try{
   const user=await verifyUser(req);
