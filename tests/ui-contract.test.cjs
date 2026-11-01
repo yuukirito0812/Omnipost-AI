@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=path=>fs.readFileSync(path,'utf8');
 const easy=read('components/SimpleSocialConnect.tsx'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
+const publish=read('app/api/managed-social/publish/route.ts'),postApi=read('app/api/posts/route.ts'),statusApi=read('app/api/managed-social/status/route.ts');
 const critical=[
  ['account menu',page.includes('omni-profile-trigger')&&page.includes('onClick={()=>{setProfileOpen(v=>!v)')],
  ['workspace menu',page.includes('omni-workspace-trigger')&&page.includes('setWorkspaceOpen(v=>!v)')],
@@ -27,7 +28,14 @@ const critical=[
  ['secure redirect links',social.includes('oauth/callback/')&&social.includes('navigator.clipboard')],
  ['managed official-social-login guidance',page.includes('<SimpleSocialConnect')&&easy.includes('https://app.upload-post.com/')&&easy.includes('ten uploads')],
  ['social password privacy',easy.includes('never')||easy.includes("won't collect")],
- ['no false live social connections',easy.includes('Publishing is a separate integration')]
+ ['no false live social connections',easy.includes('Publishing is a separate integration')],
+ ['clickable overview stats and drafts',page.includes('omni-stat-action')&&page.includes("setPostFilter('open')")],
+ ['publish now shortcut',page.includes('Post now</b>')&&page.includes("setScheduleMode('now')")],
+ ['manual calendar scheduling',postApi.includes('publishMode:status')&&page.includes('MANUAL reminder')],
+ ['managed account chooser',page.includes('omni-connected-dest')&&page.includes('setManagedPlatform(p)')],
+ ['real provider submission with idempotency',publish.includes('Idempotency-Key')&&publish.includes('/api/upload_text')&&publish.includes('/api/upload_photos')],
+ ['live post status refresh and schedule cancellation',statusApi.includes('/api/uploadposts/status?')&&statusApi.includes("method:'DELETE'")],
+ ['no premature success',page.includes('if(!result.accepted)throw Error')&&publish.includes('result.success===false')]
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
 const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g)];
