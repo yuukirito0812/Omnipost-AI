@@ -1,0 +1,112 @@
+/* OmniPost AI 1.0 — refined product identity and platform-faithful content previews */
+:root{--omni-violet:#9b7bff;--omni-cyan:#57dafa;--omni-border:#43405f;--omni-surface:#19192f}
+body{background:#090b16}
+.shell{background:radial-gradient(ellipse at 48% -14%,#25244c55,transparent 52%),#0b0d1a}
+.sidebar{background:linear-gradient(173deg,#13152b 0%,#0d1021 55%,#12122a 100%);border-right:1px solid #383554;box-shadow:5px 0 35px #02030b60}
+.logo-area{min-height:95px;height:auto;gap:11px;padding:20px 16px}
+.omni-logo-mark{border:0;background:none;box-shadow:none;width:44px;height:44px;min-width:44px;border-radius:15px;display:grid;place-items:center;overflow:visible}
+.omni-logo-mark img{width:44px;height:44px;display:block;filter:drop-shadow(0 4px 12px #8965fc50)}
+.brand-title{letter-spacing:-.7px}
+.brand-title strong{font-size:21px;font-weight:850;line-height:22px;white-space:nowrap}
+.brand-title strong em{font-size:10px;color:#efe9ff;font-style:normal;vertical-align:super;letter-spacing:0;background:linear-gradient(130deg,#6552d2,#b44ef1);padding:2px 5px;border-radius:5px}
+.brand-title small{font-size:8.5px;color:#b9abd9;letter-spacing:.35px;text-transform:none;font-weight:630;margin-top:6px}
+.workspace-tile{border-color:#524569;background:linear-gradient(125deg,#29203e,#1c1c35);box-shadow:inset 0 1px 0 #ffffff0e}
+.workspace-tile:hover{box-shadow:0 0 0 3px #aa87ff22,inset 0 1px #fff2}
+.nav-item{border-radius:11px;transition:background .18s,transform .18s,border-color .18s}
+.nav-item:hover{background:#292645;transform:translateX(2px)}
+.nav-item.active{background:linear-gradient(100deg,#543e97ad,#4534736b);box-shadow:inset 3px 0 #ad8fff,0 4px 24px #452a9c3b}
+.topbar{border-bottom-color:#373254;background:#101122db}
+.top-search{background:#1b1b33;border-color:#45405c;transition:border .2s,box-shadow .2s}
+.top-search:focus-within{border-color:#9c82e8;box-shadow:0 0 0 3px #a78bfa23}
+.profile-dot{box-shadow:0 0 18px #9872df55}
+.main-content{background:transparent}
+.hero-card{border:1px solid #655097;box-shadow:0 24px 70px #0804116e,0 0 50px #573b8c1c;background:radial-gradient(ellipse at 80% 45%,#322264,#1b1636 60%,#16142a)}
+.panel{border-color:#37354e;box-shadow:0 12px 35px #08071032}
+.panel:hover{border-color:#595078}
+.primary-btn,.hero-action,.connect-btn{transition:transform .2s,filter .2s,box-shadow .2s;cursor:pointer}
+.primary-btn:hover:not(:disabled),.hero-action:hover:not(:disabled),.connect-btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.09);box-shadow:0 8px 25px #9172fc45}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid #a88cff;outline-offset:2px}
+.omni-setup-logo{background:none}
+.omni-setup-logo img{border-radius:16px}
+.footer{display:flex;gap:14px;align-items:center}
+.footer>span:first-child{display:inline-flex;align-items:center;gap:6px}
+.footer img{border-radius:6px}
+.footer strong{color:#baa4ff}
+.preview-panel{padding-bottom:19px}
+.preview-panel .preview-tabs{padding:0 16px 17px}
+.preview-panel .preview-tabs button{transition:transform .15s,background .15s,border .15s}
+.preview-panel .preview-tabs button:hover{transform:translateY(-2px)}
+.preview-panel .preview-tabs button.active{box-shadow:0 0 0 2px #ad8aff3d,0 6px 15px #9079df25;border-color:#c7a8ff}
+.preview-panel .preview-foot{color:#a5a0c0;font-size:10px;line-height:1.6;margin:12px 20px 0}
+.channel-surface{margin:0 16px;background:#fff;color:#151515;border-radius:17px;overflow:hidden;border:1px solid #d9d8e4;box-shadow:0 20px 44px #0203127f;min-width:0}
+.channel-mobile-header,.channel-fb-app,.channel-youtube-head,.channel-x-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff;color:#17171d}
+.channel-mobile-header>b{font-family:Georgia,serif;font-size:22px;font-style:italic;letter-spacing:-.8px}
+.channel-mobile-header span,.channel-fb-app span,.channel-youtube-head span{display:flex;gap:14px;align-items:center}
+.channel-post-head{display:flex;align-items:center;gap:9px;padding:12px 13px}
+.channel-post-head>div:nth-child(2){flex:1;min-width:0}
+.channel-post-head b{font-size:12px;color:#171923;white-space:nowrap;display:block;overflow:hidden;text-overflow:ellipsis}
+.channel-post-head small{display:block;color:#777d89;font-size:10px;margin-top:3px}
+.channel-avatar{width:35px;height:35px;border-radius:50%;object-fit:cover;border:1px solid #d3d5df;flex:0 0 auto}
+.channel-avatar-fallback{display:grid;place-items:center;background:linear-gradient(135deg,#7249b5,#dc6caf);color:#fff;border:0;font-size:15px;font-weight:800}
+.channel-media{width:100%;height:100%;display:block;object-fit:cover}
+.channel-empty-media{min-height:160px;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#a4a6b6;text-align:center;padding:16px;font-size:11px;background:linear-gradient(145deg,#ede8fd,#d8d5e8)}
+.channel-insta-media{aspect-ratio:4/5;background:#eee}
+.channel-insta-actions{display:flex;justify-content:space-between;padding:11px 13px 0}
+.channel-insta-actions>div{display:flex;gap:15px}
+.channel-caption{padding:10px 13px;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.channel-caption strong{font-weight:750}
+.channel-muted{padding:0 13px 12px;color:#8d8e9b;font-size:9px}
+.channel-bottom-nav{display:flex;justify-content:space-around;padding:10px 16px;border-top:1px solid #ececf1}
+.channel-bottom-nav svg{width:19px;height:19px}
+.channel-facebook{color:#23262b}
+.channel-fb-app{background:#fff;border-bottom:1px solid #e8e8e8}
+.channel-fb-app b{font-size:23px;color:#1267d9;font-weight:850;letter-spacing:-1px}
+.channel-fb-caption{padding:0 13px 12px;line-height:1.5;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.channel-facebook-media{aspect-ratio:1.35;background:#ecebf2}
+.channel-fb-summary{color:#7c7d85;padding:11px 14px;border-bottom:1px solid #e5e6e8;font-size:10px}
+.channel-fb-actions{display:flex;justify-content:space-around;gap:5px;padding:12px 5px;color:#666c79}
+.channel-fb-actions span{display:flex;gap:5px;align-items:center;font-size:10px;font-weight:700}
+.channel-fb-actions svg{width:14px;height:14px}
+.channel-youtube-head b{font-size:19px;letter-spacing:-.9px}
+.channel-youtube-head b span{display:inline-flex;background:#f60014;color:#fff;border-radius:5px;font-size:14px;padding:2px 6px}
+.channel-video-frame{aspect-ratio:16/9;background:#171717}
+.channel-youtube-body{padding:13px}
+.channel-youtube-body h4{font-size:15px;line-height:1.4;margin:0;font-weight:760}
+.channel-youtube-body>p:first-of-type{font-size:10px;color:#737784;margin:7px 0 13px}
+.channel-youtube-author{display:flex;gap:9px;align-items:center;margin-top:13px}
+.channel-youtube-author .channel-avatar{height:32px;width:32px}
+.channel-youtube-author>div:nth-child(2){flex:1;min-width:0}
+.channel-youtube-author strong{font-size:11px;display:block}
+.channel-youtube-author small{font-size:9px;color:#777;display:block}
+.channel-follow-placeholder{background:#161619;color:#fff;border-radius:20px;padding:9px 12px;font-size:10px;font-weight:750}
+.channel-youtube-description{background:#f2f2f5;border-radius:9px;padding:12px;margin-top:12px;white-space:pre-wrap;word-break:break-word;line-height:1.5;font-size:11px}
+.channel-x{padding-bottom:8px}
+.channel-x-head{border-bottom:1px solid #eee}
+.channel-x-head>span{font-size:24px;font-weight:800}
+.channel-x-head>b{font-size:14px}
+.channel-x .channel-post-head{padding-bottom:4px}
+.channel-x .channel-post-head b span{color:#747981;font-weight:500}
+.channel-x-content{padding:5px 14px 11px;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6}
+.channel-x-media{margin:0 13px;border:1px solid #ddd;border-radius:13px;overflow:hidden;aspect-ratio:16/9;background:#e8e8ec}
+.channel-x-footer{display:flex;justify-content:space-around;padding:13px 0 3px;color:#6f7681}
+.channel-x-footer svg{width:17px;height:17px}
+.channel-format-note{padding:8px 12px;background:#fff4d9;border-top:1px solid #d7bf79;color:#6d521c;font-size:10px;line-height:1.4}
+.channel-tiktok-shell{margin:0 16px;display:grid;justify-items:center}
+.channel-tiktok-player{width:min(100%,288px);aspect-ratio:9/16;position:relative;overflow:hidden;border:4px solid #444452;border-radius:29px;background:#101014;box-shadow:0 20px 55px #000c;color:#fff}
+.channel-tiktok-back{position:absolute;inset:0;background:#1b1625}
+.channel-tiktok-back .channel-media,.channel-tiktok-back .channel-empty-media{width:100%;height:100%;min-height:100%}
+.channel-tiktok-back::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#08050caa 0%,transparent 27%,transparent 60%,#0b0612ec 100%);pointer-events:none}
+.channel-tiktok-top{position:absolute;z-index:1;top:28px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:12px;font-size:11px;text-shadow:0 2px 6px #000}
+.channel-tiktok-top b{border-bottom:2px solid #fff;padding-bottom:4px}
+.channel-tiktok-top svg{position:absolute;right:13px;top:0}
+.channel-tiktok-rail{position:absolute;z-index:1;right:11px;bottom:81px;display:grid;justify-items:center;gap:14px;filter:drop-shadow(0 2px 4px #000)}
+.channel-tiktok-rail svg{width:24px;height:24px;stroke-width:2.3}
+.channel-tiktok-rail .channel-avatar{width:31px;height:31px;border:2px solid white}
+.channel-tiktok-caption{position:absolute;left:12px;right:52px;bottom:44px;z-index:1;font-size:11px;text-shadow:0 2px 5px #000}
+.channel-tiktok-caption strong{font-size:12px}
+.channel-tiktok-caption p{margin:6px 0;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere}
+.channel-tiktok-caption small{display:flex;align-items:center;gap:5px;font-size:9px}
+.channel-tiktok-bottom{position:absolute;z-index:1;left:8px;right:8px;bottom:0;display:flex;align-items:center;justify-content:space-around;height:38px;border-top:1px solid #ffffff4d;font-size:9px}
+.channel-disclaimer{margin:9px 0;color:#a7a1c3;font-size:10px;text-align:center}
+@media(max-width:680px){.channel-surface,.channel-tiktok-shell{margin-left:3px;margin-right:3px}.preview-panel .preview-tabs{padding-inline:2px}.channel-tiktok-player{max-width:280px}.omni-logo-mark img{width:40px;height:40px}}
+@media(prefers-reduced-motion:reduce){.nav-item,.primary-btn,.connect-btn,.hero-action{transition:none!important}}
