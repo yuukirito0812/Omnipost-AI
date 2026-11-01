@@ -32,7 +32,7 @@ export async function POST(req:Request){
   const body=await req.json();
   const key=String(body.key||'').replace(/\s/g,'').trim();
   const choice=String(body.model||'auto').trim();
-  if(!/^AIza[A-Za-z0-9_-]{20,190}$/.test(key))return Response.json({error:'This does not look like a Gemini API key from Google AI Studio. Copy the entire key (usually starts with AIza).',stage:'format'},{status:400});
+  if(key.length<8||key.length>512||/[^\x21-\x7e]/.test(key))return Response.json({error:'Enter your full API key from Google AI Studio. Both newer AQ. authorization keys and older AIza keys are accepted; Google will verify it.',stage:'format'},{status:400});
   const candidates=choice==='auto'?CANDIDATES:[choice];
   if(candidates.some(model=>!/^gemini-[a-z0-9.\-]{1,65}$/.test(model)))return Response.json({error:'Select a supported Gemini text model.',stage:'model'},{status:400});
   let selected='',validationReason='';
