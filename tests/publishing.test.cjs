@@ -26,6 +26,7 @@ let providerResponse={success:true,results:{facebook:{success:true,url:'https://
 const mockFetch=async(url,options={})=>{
  calls.push({url,options});
  if(url.endsWith('/api/uploadposts/users'))return {ok:true,status:200,json:async()=>({success:true,profiles})};
+ if(url.includes('/api/uploadposts/facebook/pages'))return {ok:true,status:200,json:async()=>({success:true,pages:[{id:'fb-page-1',name:'Sample Page'}]})};
  return {ok:true,status:200,json:async()=>providerResponse};
 };
 const code=ts.transpileModule(fs.readFileSync('app/api/managed-social/publish/route.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -53,6 +54,7 @@ async function invoke(body){
  const sent=calls.find(x=>x.url.endsWith('/api/upload_text'));
  assert.equal(sent.options.body.get('user'),'default');
  assert.equal(sent.options.body.get('platform[]'),'facebook');
+ assert.equal(sent.options.body.get('facebook_page_id'),'fb-page-1','Must select actual available Facebook Page');
  stored=[];calls=[];providerResponse={success:true,job_id:'scheduled-123',request_id:'omni-scheduled'};
  result=await invoke({mode:'schedule',post:{...draft,scheduledAt:'2030-11-03T10:30:00.000Z'},profile:'default',platforms:['facebook']});
  assert.equal(result.status,202);
