@@ -1,5 +1,17 @@
 # OmniPost AI — Live deployment setup
 
+## Email login rate limits
+
+OmniPost uses Supabase Auth from the **existing EstateFlow project**. The built-in SMTP provider is rate-limited across the entire project, not per website. If the login form reports `AuthApiError: email rate limit exceeded`, additional magic-link requests cannot be delivered until the quota resets.
+
+- Use a link already delivered, if still valid.
+- If your account already has a password, switch to **Password** sign-in; it does not send an email.
+- Once signed in via an email link, open **Settings > Set or change your account password** to avoid relying on repeated email links.
+- For production sign-in emails, configure a legitimate custom SMTP provider in [Supabase > Authentication > SMTP Settings](https://supabase.com/dashboard/project/fcwrcxywakrwkixvewoq/auth/smtp). Verify the sender and adjust the project-wide sending rate in [Authentication > Rate Limits](https://supabase.com/dashboard/project/fcwrcxywakrwkixvewoq/auth/rate-limits).
+- **Keep Confirm email on.** Disabling verification would compromise account ownership for both OmniPost and EstateFlow.
+
+Do not paste SMTP credentials or passwords into GitHub, ChatGPT messages, or frontend environment variables. Custom SMTP requires a verified email sender and credentials from the provider. Because Supabase Auth is shared, any SMTP change also applies to EstateFlow.
+
 ## Current hosted project
 
 - Website: https://omnipost-ai-theta.vercel.app
