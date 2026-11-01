@@ -1,25 +1,51 @@
-import {verifyUser,admin,userDb,fail} from '../../../lib/server';
+import {verifyUser,userDb,fail} from '../../../lib/server';
 import type {ContentPost} from '../../../lib/types';
 export const runtime='nodejs';
-export async function POST(req:Request){try{const user=await verifyUser(req);const post:ContentPost=await req.json(),db=process.env.SUPABASE_SERVICE_ROLE_KEY?admin():userDb(req);
- if(!process.env.SUPABASE_SERVICE_ROLE_KEY&&['scheduled','queued'].includes(post.status))throw Error('Publishing requires approved social connections and protected server credentials. Save a draft instead.');
- if(!post.title?.trim()&&!post.caption?.trim())throw Error('Add a title or caption');
- if(!['draft','review','scheduled','queued'].includes(post.status))throw Error('Invalid status');
- if(post.status==='scheduled'&&(!post.scheduledAt||new Date(post.scheduledAt).getTime()<=Date.now()))throw Error('Choose a future schedule date and time');
- if(['queued','scheduled'].includes(post.status)&&!post.accountIds?.length)throw Error('Choose a connected social account first');
- let validAccounts:any[]=[];
- if(['queued','scheduled'].includes(post.status)){
-  const {data:accounts,error:ae}=await db.from('omnipost_social_accounts').select('id,platform').eq('user_id',user.id).in('id',post.accountIds);
-  if(ae)throw ae;if(!accounts||accounts.length!==new Set(post.accountIds).size)throw Error('One or more connected accounts were not found');
-  validAccounts=accounts;
- }
- const data={...post,id:undefined};const {data:row,error}=await db.from('omnipost_posts').insert({user_id:user.id,data,status:post.status,scheduled_at:post.status==='scheduled'?post.scheduledAt:null}).select('*').single();if(error)throw error;
- if(validAccounts.length){const {error:je}=await db.from('omnipost_publish_jobs').insert(validAccounts.map((a:any)=>({user_id:user.id,post_id:row.id,account_id:a.id,status:'queued'})));if(je){await db.from('omnipost_posts').delete().eq('id',row.id).eq('user_id',user.id);throw je;}}
- return Response.json({id:row.id});}catch(e){return fail(e);}}
-export async function PATCH(req:Request){try{const u=await verifyUser(req),{id,...patch}=await req.json();const db=process.env.SUPABASE_SERVICE_ROLE_KEY?admin():userDb(req);const {data:existing,error:err}=await db.from('omnipost_posts').select('*').eq('id',id).eq('user_id',u.id).single();if(err)throw err;if(!['draft','review','scheduled'].includes(existing.status))throw Error('Cannot edit a post already being published');
- const status=patch.status||existing.status;if(!process.env.SUPABASE_SERVICE_ROLE_KEY&&status==='scheduled')throw Error('Scheduling requires protected publishing credentials and a connected social account');if(!['draft','review','scheduled'].includes(status))throw Error('Use the publish action to submit posts');const data={...existing.data,...patch};if(status==='scheduled'&&(!Array.isArray(data.accountIds)||!data.accountIds.length))throw Error('Choose at least one connected account to schedule');if(status==='scheduled'&&(!data.scheduledAt||Date.parse(data.scheduledAt)<=Date.now()))throw Error('Choose a future publishing time');const {error}=await db.from('omnipost_posts').update({data,status,scheduled_at:status==='scheduled'?data.scheduledAt:null,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',u.id);if(error)throw error;
- if(status==='scheduled'){
- const {data:acc,error:ae}=await db.from('omnipost_social_accounts').select('id').eq('user_id',u.id).in('id',data.accountIds||[]);if(ae)throw ae;if(!acc||acc.length!==new Set(data.accountIds).size)throw Error('One or more social accounts are missing');await db.from('omnipost_publish_jobs').delete().eq('post_id',id).eq('user_id',u.id);if(acc?.length){const {error:je}=await db.from('omnipost_publish_jobs').insert(acc.map((a:any)=>({user_id:u.id,post_id:id,account_id:a.id,status:'queued'})));if(je)throw je;}
- }else await db.from('omnipost_publish_jobs').delete().eq('post_id',id).eq('user_id',u.id);
- return Response.json({ok:true});}catch(e){return fail(e);}}
-export async function DELETE(req:Request){try{const u=await verifyUser(req),id=new URL(req.url).searchParams.get('id');if(!id)throw Error('Missing ID');const db=process.env.SUPABASE_SERVICE_ROLE_KEY?admin():userDb(req);const {data:p,error:e}=await db.from('omnipost_posts').select('status').eq('id',id).eq('user_id',u.id).single();if(e)throw e;if(['publishing','published','partial'].includes(p.status))throw Error('Cannot delete posts that may have already been submitted to a social platform');const {error}=await db.from('omnipost_posts').delete().eq('id',id).eq('user_id',u.id);if(error)throw error;return Response.json({ok:true});}catch(e){return fail(e);}}
+const editable=new Set(['draft','review','scheduled']);
+const validUuid=(s:any)=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(s);
+function validate(post:ContentPost,status:string){
+ if(!editable.has(status))throw Error('Use the managed publishing action for real social delivery.');
+ if(!post.title?.trim()&&!post.caption?.trim()&&!post.mediaUrl)throw Error('Add a caption, title, or media before saving.');
+ if(status==='scheduled'&&(!post.scheduledAt||Date.parse(post.scheduledAt)<Date.now()+60000))throw Error('Select a future date and time.');
+}
+export async function POST(req:Request){
+ try{
+  const user=await verifyUser(req),raw:ContentPost=await req.json();
+  const status=raw.status||'draft';validate(raw,status);
+  const data={...raw,id:undefined,status,publishMode:status==='scheduled'?'planner':'none',deliveryStatus:status==='scheduled'?'Manual calendar reminder — not auto-published':undefined};
+  const db=userDb(req);
+  const {data:row,error}=await db.from('omnipost_posts').insert({user_id:user.id,data,status,scheduled_at:status==='scheduled'?new Date(raw.scheduledAt).toISOString():null}).select('id').single();
+  if(error)throw error;
+  return Response.json({id:row.id,status,automatic:false,message:status==='scheduled'?'Added to your content calendar (manual reminder). No social post will be sent automatically.':'Saved in your private workspace.'});
+ }catch(e){return fail(e)}
+}
+export async function PATCH(req:Request){
+ try{
+  const user=await verifyUser(req),input=await req.json(),id=input.id;
+  if(!validUuid(id))throw Error('Select an existing saved post to edit.');
+  const db=userDb(req);
+  const {data:existing,error:readError}=await db.from('omnipost_posts').select('*').eq('id',id).eq('user_id',user.id).single();
+  if(readError)throw readError;
+  if(!editable.has(existing.status)||existing.data?.publishMode==='managed')throw Error('Provider-submitted posts cannot be edited here. Use the provider’s scheduled-job editor.');
+  const status=input.status||existing.status;
+  const merged:ContentPost={...existing.data,...input,id,status};
+  validate(merged,status);
+  const data={...merged,publishMode:status==='scheduled'?'planner':'none',deliveryStatus:status==='scheduled'?'Manual calendar reminder — not auto-published':undefined};
+  const {error}=await db.from('omnipost_posts').update({data,status,scheduled_at:status==='scheduled'?new Date(merged.scheduledAt).toISOString():null,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',user.id);
+  if(error)throw error;
+  return Response.json({id,status,automatic:false,message:status==='scheduled'?'Calendar reminder updated (manual publishing).':'Post updated.'});
+ }catch(e){return fail(e)}
+}
+export async function DELETE(req:Request){
+ try{
+  const user=await verifyUser(req),id=new URL(req.url).searchParams.get('id');
+  if(!validUuid(id))throw Error('Missing or invalid post ID.');
+  const db=userDb(req);
+  const {data:post,error:readError}=await db.from('omnipost_posts').select('status,data').eq('id',id).eq('user_id',user.id).single();
+  if(readError)throw readError;
+  if(post.data?.publishMode==='managed'||!['draft','review','failed','scheduled'].includes(post.status))throw Error('Cannot delete a post submitted to a provider. Cancel the provider job first.');
+  const {error}=await db.from('omnipost_posts').delete().eq('id',id).eq('user_id',user.id);
+  if(error)throw error;
+  return Response.json({ok:true});
+ }catch(e){return fail(e)}
+}
