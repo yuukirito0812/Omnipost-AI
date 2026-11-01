@@ -16,7 +16,8 @@
     "react-dom": "^19.0.0",
     "@supabase/supabase-js": "^2.57.0",
     "lucide-react": "^0.468.0",
-    "date-fns": "^4.1.0"
+    "date-fns": "^4.1.0",
+    "ai": "^7.0.0"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
