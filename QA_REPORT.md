@@ -24,6 +24,16 @@ The production build runs `npm test && next build`. Tests include:
 - Next.js production compilation and TypeScript type checking.
 - Production health endpoint response and Supabase RLS policy inspection.
 
+## Follow-up upgrade — November 1, 2026
+
+- **Gemini connection:** Found zero persisted personal AI key records in the shared Supabase table. Replaced the older model-only/key-list validation with a small *real generation* request. Auto-selects an available text model beginning with `gemini-3.5-flash-lite`; reports explicit formatting, model availability, authentication, rate-limit, or database storage errors next to the key field. A connected account must still supply its Google AI Studio key; no secret was accessed from the user's personal account.
+- **Branding:** Added a real SVG favicon / infinity-style OmniPost logo, branded site metadata, sidebar identity, login logo, and “by Carl Vincent Zabala” creator credit in the interface.
+- **Platform previews:** Built responsive, content-driven Instagram feed, Facebook feed, TikTok vertical, YouTube video, and X post layouts. They use the draft caption, relevant override, media, account name/avatar when connected, and format notices. **These are high-fidelity approximations, not the platform's live rendering API.** Counts/engagement and actual publishing are not simulated.
+- **OAuth onboarding:** Confirmed none of the five platform client IDs/secrets are configured on Vercel; the protected Supabase service key is also absent. The UI now provides provider-specific developer portals, required scopes, exact callback URLs, missing-variable instructions, copy-to-clipboard, and setup rechecks. These are prerequisites; actual social authorization still requires app registrations and permissions.
+- **Automated regression:** Vercel's last build passed 23 static feature contracts and 77 button action/submit checks, along with mocked assistant logic and Next.js production compilation.
+
+The status `Developer credentials not configured` cannot legitimately disappear until the account owner creates provider-specific developer applications and configures approved IDs/secrets securely in the deployment. A Gemini API key does not substitute for Meta, Google/YouTube, TikTok, or X OAuth credentials.
+
 ## Known external dependencies — not fake functionality
 
 1. Google Gemini requires a personal key created in Google AI Studio (free tier subject to model availability, quota, and Google's data-use terms). The application cannot obtain another person's API key by itself. End-to-end AI output remains unverified until a signed-in user connects a key and uses Test AI now.
