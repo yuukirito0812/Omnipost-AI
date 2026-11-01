@@ -17,3 +17,56 @@
 .omni-login-form{display:grid;gap:10px;margin:24px 0}.omni-login-form label{font-size:11px;color:#c9c4e3;font-weight:700}.omni-login-form input{background:#1d2034;border:1px solid #43425f;padding:13px;border-radius:10px;color:#f7f5ff;outline:none}.omni-login-form .primary-btn{justify-content:center;min-height:45px}.omni-login-sent{padding:15px;border:1px solid #408d746c;background:#193a3440;color:#b1ecd8;display:flex;align-items:center;gap:10px;border-radius:11px;margin:20px 0}.omni-auth-error{color:#ffc4c8!important;font-size:12px}
 .omni-checkline{display:flex!important;align-items:flex-start;gap:9px;margin:10px 0;color:#dad7ea!important;font-size:12px;line-height:1.5}.omni-checkline input{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:#a78aff}
 .omni-retry-button{font-size:10px!important;background:#393354!important;border:1px solid #6b5c9b!important;padding:5px 7px!important;color:#e8ddff!important;border-radius:6px!important}
+
+
+/* OmniPost workspace control, account menu, and personal AI connection */
+.omni-menu-anchor{position:relative;min-width:0}
+.omni-workspace-trigger{width:calc(100% - 30px);text-align:left;cursor:pointer;transition:border-color .18s,transform .18s,background .18s}
+.omni-workspace-trigger:hover,.omni-workspace-trigger:focus-visible{border-color:#aa8afd;background:#23213d;transform:translateY(-1px);outline:none}
+.omni-profile-trigger{cursor:pointer;border:2px solid #63517c;transition:box-shadow .18s,transform .18s}
+.omni-profile-trigger:hover,.omni-profile-trigger:focus-visible{box-shadow:0 0 0 4px #a68bfb33;transform:translateY(-1px);outline:0}
+.omni-popover-menu{position:absolute;z-index:75;right:0;top:calc(100% + 9px);width:min(290px,calc(100vw - 22px));padding:15px;display:grid;gap:6px;border:1px solid #595175;border-radius:15px;background:linear-gradient(155deg,#24243c,#121725);box-shadow:0 18px 48px #000a;color:#eeeafd;animation:omni-menu-in .16s ease-out}
+.omni-workspace-menu{left:15px;right:auto;top:calc(100% - 4px)}
+.omni-popover-menu strong{font-size:12px;word-break:break-all}
+.omni-popover-menu>small{color:#a6a5c2;font-size:10px;margin-bottom:6px}
+.omni-menu-caption{font-size:9px;font-weight:850;letter-spacing:1.2px;color:#b49aff;margin:0}
+.omni-popover-menu button{display:flex;align-items:center;gap:9px;width:100%;background:transparent;border:0;color:#eee8ff;border-radius:9px;padding:10px;text-align:left;font-size:11px;cursor:pointer}
+.omni-popover-menu button:hover,.omni-popover-menu button:focus-visible{background:#ffffff12;outline:1px solid #8b75cc}
+.omni-popover-menu .omni-danger-menu{color:#ffb1bd}
+.omni-provider-card{display:flex;align-items:flex-start;gap:17px;margin-bottom:20px;padding:23px;border:1px solid #64528d;background:radial-gradient(ellipse at top left,#392d5b 0%,#1b1d35 47%,#141725 100%);box-shadow:0 14px 45px #08081433}
+.omni-provider-icon{width:46px;height:46px;min-width:46px;border-radius:14px;background:linear-gradient(135deg,#bc85f5,#6b67d9);display:grid;place-items:center;box-shadow:0 6px 24px #9575fd55;color:#fff}
+.omni-provider-body{flex:1;min-width:0}
+.omni-provider-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+.omni-provider-heading h3{font-size:19px;line-height:1.35;color:#f9f5ff;margin:0 0 10px}
+.omni-provider-heading .outline-btn{white-space:nowrap;gap:7px}
+.omni-provider-body>p{font-size:12px;line-height:1.7;color:#bdb6d9;margin:0 0 14px}
+.omni-inline-status{font-size:10px;vertical-align:middle;border:1px solid #746481;color:#d9c3fd;padding:4px 8px;border-radius:20px;margin-left:5px;white-space:nowrap}
+.omni-inline-status.connected{border-color:#54ad99;color:#91efcb;background:#1c685a33}
+.omni-provider-form{display:grid;gap:9px}
+.omni-provider-form label{color:#f0eafa;font-size:11px;font-weight:750}
+.omni-key-row{display:flex;gap:10px;align-items:stretch}
+.omni-key-row input{flex:1;min-width:0;border-radius:10px;padding:12px 13px;border:1px solid #746392;background:#101629;color:#fff;outline:none;font-size:12px}
+.omni-key-row input:focus{border-color:#b08dff;box-shadow:0 0 0 3px #9872df33}
+.omni-key-row .primary-btn{min-height:44px;white-space:nowrap}
+.omni-provider-form small{display:flex;align-items:center;gap:7px;color:#a9a2c4;font-size:10px}
+.omni-connected-actions{display:flex;gap:11px;flex-wrap:wrap;align-items:center}
+.omni-connected-actions>span{display:flex;gap:8px;align-items:center;flex:1;font-size:12px;color:#a5eacb}
+.omni-ai-test-result{background:#121a2e;border:1px solid #525479;border-radius:12px;padding:14px;margin-top:16px}
+.omni-ai-test-result strong{color:#dcd0fa;font-size:11px}
+.omni-ai-test-result p{font-size:12px;line-height:1.6;white-space:pre-wrap;color:#eee}
+.omni-ai-connect{padding:13px 15px;border-bottom:1px solid #635187;background:linear-gradient(125deg,#3c2e64,#22223e)}
+.omni-ai-connect strong{display:flex;align-items:center;gap:8px;font-size:12px;color:#e6d3ff}
+.omni-ai-connect p{font-size:11px;line-height:1.5;color:#bbb4dd;margin:8px 0}
+.omni-ai-connect button{display:inline-flex;align-items:center;gap:7px;border:1px solid #ac88f9;background:#a78bfa;color:#130d27;font-size:11px;font-weight:850;border-radius:8px;padding:9px 13px;cursor:pointer}
+.omni-asset-actions{display:flex;gap:7px}
+.omni-asset-actions .outline-btn{flex:1;width:auto;font-size:10px;display:flex;gap:5px;justify-content:center}
+.omni-asset-actions .omni-delete-asset{flex:0 0 auto;color:#ffb7c4;border-color:#69414c}
+.omni-asset-actions .omni-delete-asset:hover{background:#6a3544;color:#fff}
+.omni-calendar-add{color:#ddd5ed;border:1px solid transparent;background:transparent;border-radius:8px;display:inline-flex;gap:3px;align-items:center;justify-content:space-between;min-width:35px;height:27px;padding:3px 6px;cursor:pointer;font-weight:700}
+.omni-calendar-add svg{opacity:0;transition:opacity .15s}
+.omni-calendar-add:hover,.omni-calendar-add:focus-visible{color:#fff;border-color:#816caa;background:#5b44884a}
+.omni-calendar-add:hover svg,.omni-calendar-add:focus-visible svg{opacity:1}
+.day.today .omni-calendar-add{background:#6c55a2;color:#fff}
+@keyframes omni-menu-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:680px){.omni-provider-card{flex-direction:column;padding:16px}.omni-provider-icon{width:40px;height:40px;min-width:40px}.omni-key-row{flex-direction:column}.omni-popover-menu{width:min(270px,calc(100vw - 28px))}.omni-provider-heading{align-items:flex-start}.omni-provider-heading h3{font-size:16px}.omni-provider-heading .outline-btn{width:100%;justify-content:center}}
+@media(hover:none){.omni-calendar-add svg{opacity:.7}}
