@@ -5,10 +5,17 @@ export function admin(){
  if(!u||!k)throw new Error('Configure Supabase server credentials');
  return createClient(u,k,{auth:{persistSession:false,autoRefreshToken:false}});
 }
+export function userDb(req:Request){
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+ const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+ const bearer=req.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
+ if(!url||!key||!bearer)throw new Error('Sign in to your workspace');
+ return createClient(url,key,{global:{headers:{Authorization:`Bearer ${bearer}`}},auth:{persistSession:false,autoRefreshToken:false}});
+}
 export async function verifyUser(req:Request){
  const bearer=req.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
  if(!bearer)throw new Error('Please sign in to continue');
- const {data:{user},error}=await admin().auth.getUser(bearer);
+ const {data:{user},error}=await userDb(req).auth.getUser(bearer);
  if(error||!user)throw new Error('Invalid or expired session');
  return user;
 }
