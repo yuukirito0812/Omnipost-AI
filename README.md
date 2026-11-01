@@ -1,6 +1,6 @@
 # OmniPost AI — Multi-Channel Social Media Manager
 
-A **real, authenticated Next.js application**, with a persistent, context-aware AI Gateway assistant and adapters for five official social publishing APIs. It is *not* a static HTML demo. **Hosted at https://omnipost-ai-theta.vercel.app**. AI and private drafts are configured; live social-account publishing still requires approved developer access and private backend credentials.
+A **real, authenticated Next.js application**, with a persistent, context-aware Gemini assistant and adapters for five official social publishing APIs. It is *not* a static HTML demo. **Hosted at https://omnipost-ai-theta.vercel.app**. Private drafts and the encrypted Gemini key connection are configured; live social-account publishing still requires approved developer access and private backend credentials.
 
 ## Application features
 
@@ -9,12 +9,12 @@ A **real, authenticated Next.js application**, with a persistent, context-aware 
 - One master post, editable title, caption, per-platform overrides, hashtags, CTA, accessibility alt text, video/image uploads, link, editorial first-comment notes, and synthetic media disclosures.
 - Save drafts, send posts to review, schedule for later, publish now, duplicate content, edit, delete, and browse the calendar.
 - Media library, automatic per-account job records, publishing failures, explicit unsupported-format notices, limited retry controls, export `.ics` calendar.
-- Always-available right-side **Omni AI** chat, minimizable floating bubble, saved conversation history, microphone dictation where supported, real AI Gateway model inference, live context from your actual posts/calendar/connected accounts/errors. AI can propose platform-tailored posts, multi-day editorial plans, and reschedules; every write needs an explicit review/confirmation.
+- Always-available right-side **Omni AI** chat, minimizable floating bubble, saved conversation history, microphone dictation where supported, real Gemini API inference using each user's own encrypted key, live context from your actual posts/calendar/connected accounts/errors. AI can propose platform-tailored posts, multi-day editorial plans, and reschedules; every write needs an explicit review/confirmation.
 - Real posting adapters: Facebook Page text/photos; Instagram Professional image/Reels (processing-sensitive); TikTok video/photo via verified URL ingestion (submission state); YouTube video upload (50 MB per file in this implementation); X text only. **These have not been end-to-end tested with authorized live accounts.** Specific formats and API scopes may require further implementation or platform approval.
 
 ## Quick start
 
-Requires Node.js 20+ and npm, an active internet connection, a configured Supabase project and an AI Gateway-enabled Vercel deployment for the assistant.
+Requires Node.js 20+ and npm, an active internet connection, the existing configured Supabase project and your own Google AI Studio API key for live AI.
 
 ```bash
 npm install
@@ -27,9 +27,22 @@ Open `http://localhost:3000`. Without Supabase configuration the UI shows a clea
 
 ## What AI can and cannot do
 
-The assistant uses `POST /api/assistant` and real Vercel AI Gateway generation authenticated by the deployment's OIDC identity. The API verifies the signed-in user through their Supabase session and row-level policies, fetches **their** recent content, schedules, connected account names and publishing statuses, applies rate limiting, validates structured suggestions, and persists conversation to the private database. It never sends a post or changes the schedule until the user confirms in the app.
+The assistant uses `POST /api/assistant` and the Google Gemini API when the signed-in user securely connects their own API key from Settings. Vercel AI Gateway is opt-in only; the application does not require a Vercel credit card for the Gemini Free Tier option. The API verifies the signed-in user through their Supabase session and row-level policies, fetches **their** recent content, schedules, connected account names and publishing statuses, applies rate limiting, validates structured suggestions, and persists conversation to the private database. It never sends a post or changes the schedule until the user confirms in the app.
 
 The AI service receives a bounded subset of workspace content. Obtain clients' consent before including their private information. Keys and OAuth tokens are stored server-side; platform credentials are encrypted before database storage. The AI does **not** receive your passwords or OAuth secrets.
+
+## Free Gemini AI — no Vercel credit card required
+
+1. Sign in to https://omnipost-ai-theta.vercel.app (existing Supabase password or email link).
+2. Get an API key from https://aistudio.google.com/api-keys using a Google account with Free Tier access.
+3. Open **Settings → AI connection**, enter the key and click **Connect Gemini**. OmniPost verifies it with Google and encrypts it using the server-side `CREDENTIAL_ENCRYPTION_KEY` before writing it to a user-owned Supabase row. The key is never returned to the browser.
+4. Click **Test AI now**, or open the persistent sidebar and ask it for a draft. Google free-tier model access and rate limits vary; Google may use free-tier content to improve its products. Avoid including private client information without permission.
+
+You do **not** need to add a card to Vercel or store an AI key in GitHub. The original Vercel AI Gateway path is disabled by default; it can be explicitly enabled with `AI_GATEWAY_ENABLED=true` if your team has an eligible paid/verified account. Without a valid personal or server key, OmniPost does **not** fake an AI response.
+
+## Interface and validation
+
+The top-right account avatar opens a profile menu (settings, content, AI, sign-out). The My Brand tile opens workspace shortcuts and customization. Content calendar dates can start a draft; media assets can be removed with confirmation. Vercel builds now run `npm test` (AI contract + UI action audit) before compiling, checking the 72 button elements audited in the source.
 
 ## Deployment, approvals and limits
 
@@ -62,4 +75,4 @@ The app's TypeScript source and CSS were parsed; AI API mock tests passed. This 
 
 This build uses the existing EstateFlow Supabase project, but **only** the `public.omnipost_*` tables and `omnipost-media` storage bucket. Source code and schema have been renamed to avoid cross-app collisions. Auth/users, quotas, and infrastructure are still shared.
 
-Use `db/schema.sql` exactly once for this isolated install; do not run the old schema from OmniPost ZIP versions. This does not modify EstateFlow `public.workspaces` or PESOBASE tables. The AI sidebar now uses Vercel AI Gateway and does **not** need a Gemini API key or Supabase service-role key. The service-role key, cron secret, encryption key, and platform OAuth credentials are still required for protected social publishing; store them only in Vercel, never in GitHub.
+Use `db/schema.sql` exactly once for this isolated install; do not run the old schema from OmniPost ZIP versions. This does not modify EstateFlow `public.workspaces` or PESOBASE tables. The AI sidebar now supports a user's own Gemini Free Tier API key, validated with Google and encrypted in the user-scoped `omnipost_user_ai_settings` table. This avoids the Vercel AI Gateway card requirement. A Supabase service-role key is **not** required for AI or private drafts. The service-role key, cron secret, encryption key, and platform OAuth credentials are still required for protected social publishing; store them only in Vercel, never in GitHub.
