@@ -1,7 +1,7 @@
 import {decrypt,encrypt,fail,userDb,verifyUser} from '../../../lib/server';
 export const runtime='nodejs';
 
-type Profile={username:string;accounts:{platform:string;name:string;handle:string;externalId:string;avatar:string}[]};
+type Profile={username:string;accounts:{platform:string;name:string;handle:string;externalId:string;avatar:string;reauthRequired:boolean}[];facebookPages:{id:string;name:string}[];facebookWarning?:string};
 const ROOT='https://api.upload-post.com';
 const platforms=new Set(['facebook','instagram','tiktok','youtube','x']);
 async function getRemoteProfiles(key:string):Promise<{plan:string;limit:number|null;profiles:Profile[]}>{
@@ -16,9 +16,13 @@ async function getRemoteProfiles(key:string):Promise<{plan:string;limit:number|n
   accounts:Object.entries(p.social_accounts||{}).filter(([platform,value])=>platforms.has(platform)&&value&&typeof value==='object').map(([platform,value])=>{
    const obj:any=value;
    const avatar=String(obj.social_images||obj.profile_picture||'');
-   return {platform,name:String(obj.display_name||obj.name||obj.handle||platform).slice(0,120),handle:String(obj.handle||obj.username||'').slice(0,120),externalId:String(obj.username||obj.id||'').slice(0,200),avatar:/^https:\/\//.test(avatar)?avatar.slice(0,700):''}
-  })
+   return {platform,name:String(obj.display_name||obj.name||obj.handle||platform).slice(0,120),handle:String(obj.handle||obj.username||'').slice(0,120),externalId:String(obj.username||obj.id||'').slice(0,200),avatar:/^https:\/\//.test(avatar)?avatar.slice(0,700):'',reauthRequired:obj.reauth_required===true}
+  }),facebookPages:[]
  }));
+ for(const profile of profiles.slice(0,10)){
+  if(!profile.accounts.some(a=>a.platform==='facebook'))continue;
+  try{const resp=await fetch(ROOT+'/api/uploadposts/facebook/pages?profile='+encodeURIComponent(profile.username),{headers:{Authorization:'Apikey '+key,Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(9000)});const pages:any=await resp.json().catch(()=>({}));profile.facebookPages=resp.ok&&Array.isArray(pages.pages)?pages.pages.filter((p:any)=>p.id).map((p:any)=>({id:String(p.id),name:String(p.name||'Facebook Page')})).slice(0,30):[];if(!profile.facebookPages.length)profile.facebookWarning='Facebook login is connected, but no Facebook Page is available for publishing. Connect or create a Page in Upload-Post.';}catch{profile.facebookWarning='Could not verify Facebook Pages right now. Recheck your connection in Upload-Post.'}
+ }
  return {plan:String(data.plan||'unknown'),limit:Number.isFinite(Number(data.limit))?Number(data.limit):null,profiles};
 }
 async function savedKey(req:Request,userId:string){
