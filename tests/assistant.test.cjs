@@ -7,7 +7,6 @@ const store={omnipost_ai_messages:[],omnipost_posts:[{id:'post-1',user_id:'user-
 const mockDb=()=>({from(table){let filters=[],max=Infinity,reverse=false,projection=null,countOptions=null;
   const base={select(fields,opts){projection=fields;countOptions=opts;return this},eq(k,v){filters.push(x=>x[k]===v);return this},gte(k,v){filters.push(x=>x[k]>=v);return this},order(_k,o){reverse=o?.ascending===false;return this},limit(n){max=n;return this},insert(rows){const arr=Array.isArray(rows)?rows:[rows];for(const row of arr)store[table].push({...row,id:'id-'+store[table].length,created_at:new Date().toISOString()});return Promise.resolve({data:arr,error:null})},delete(){return {eq(k,v){store[table]=store[table].filter(x=>x[k]!==v);return Promise.resolve({error:null})}}},then(ok,err){let rows=store[table].filter(x=>filters.every(fn=>fn(x)));if(reverse)rows=rows.slice().reverse();rows=rows.slice(0,max);return Promise.resolve(countOptions?.head?{count:rows.length,error:null}:{data:rows,error:null}).then(ok,err)}};return base;}});
 let requestedModel=0;
-let requestedModel=0;
 const mocks={
  '../../../lib/server':{
   userDb:mockDb,
