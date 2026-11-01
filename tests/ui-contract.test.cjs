@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=path=>fs.readFileSync(path,'utf8');
-const page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
+const easy=read('components/SimpleSocialConnect.tsx'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
 const critical=[
  ['account menu',page.includes('omni-profile-trigger')&&page.includes('onClick={()=>{setProfileOpen(v=>!v)')],
  ['workspace menu',page.includes('omni-workspace-trigger')&&page.includes('setWorkspaceOpen(v=>!v)')],
@@ -24,7 +24,10 @@ const critical=[
  ['no fabricated social engagement',preview.includes('No engagement data')],
  ['social setup guidance',page.includes('<SocialConnectionGuide')&&social.includes('callback')&&social.includes('onCheck')],
  ['complete OAuth readiness',health.includes("'_CLIENT_SECRET'")&&social.includes('serverReady')],
- ['secure redirect links',social.includes('oauth/callback/')&&social.includes('navigator.clipboard')]
+ ['secure redirect links',social.includes('oauth/callback/')&&social.includes('navigator.clipboard')],
+ ['managed official-social-login guidance',page.includes('<SimpleSocialConnect')&&easy.includes('https://app.upload-post.com/')&&easy.includes('10 uploads')],
+ ['social password privacy',easy.includes('never')||easy.includes("won't collect")],
+ ['no false live social connections',easy.includes('does not activate native OmniPost publishing')]
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
 const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g)];
