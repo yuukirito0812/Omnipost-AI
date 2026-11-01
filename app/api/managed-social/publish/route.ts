@@ -22,7 +22,7 @@ export async function POST(req:Request){
   const post:ContentPost=payload.post;
   const mode=payload.mode==='schedule'?'schedule':payload.mode==='now'?'now':null;
   const profile=String(payload.profile||'').trim();
-  const selected:Platform[]=Array.isArray(payload.platforms)?[...new Set(payload.platforms)]:[];
+  const selected:Platform[]=Array.isArray(payload.platforms)?Array.from(new Set<Platform>(payload.platforms.filter((p:unknown):p is Platform=>typeof p==='string'&&recognized.has(p)))):[];
   if(!post||!mode||!profile||!selected.length||selected.some(p=>!recognized.has(p)))return failure(400,'Choose your Upload-Post profile and at least one connected social account before posting.');
   if(!post.title?.trim()&&!post.caption?.trim()&&!post.mediaUrl)return failure(400,'Add a caption, title or media before publishing.');
   if(mode==='schedule'&&(!post.scheduledAt||!Number.isFinite(Date.parse(post.scheduledAt))||Date.parse(post.scheduledAt)<Date.now()+60000))return failure(400,'Choose a valid future time for scheduled publishing.');
