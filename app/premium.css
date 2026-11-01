@@ -161,3 +161,23 @@ input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-vis
 .omni-simple-note svg{color:#cbb6ff;flex:0 0 auto;margin-top:2px}
 @media(max-width:1030px){.omni-simple-steps{grid-template-columns:1fr}}
 @media(max-width:680px){.omni-simple-social{padding:17px!important}.omni-simple-social h3{font-size:19px}.omni-simple-actions>a{width:100%}}
+
+
+.omni-managed-sync{border:1px solid #5b4a8a;background:#171a30;border-radius:16px;margin:-10px 0 25px;padding:18px 20px;box-shadow:0 9px 30px #0507104d}
+.omni-managed-form{display:grid;gap:11px}
+.omni-managed-form label{color:#e6d8ff;font-size:12px;font-weight:750}
+.omni-managed-form>div{display:flex;gap:11px;align-items:stretch}
+.omni-managed-form input{min-width:0;flex:1;background:#101525;border:1px solid #73609c;border-radius:10px;color:#fff;padding:12px 13px;outline:none;font-size:12px}
+.omni-managed-form input:focus-visible{box-shadow:0 0 0 3px #8b76ff26}
+.omni-managed-form button{display:flex;align-items:center;gap:8px;justify-content:center;white-space:nowrap}
+.omni-managed-form small,.omni-managed-sync-foot{font-size:10px;color:#a9a7c1;line-height:1.55;margin:2px 0 0}
+.omni-managed-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.omni-managed-row>strong{display:flex;gap:7px;align-items:center;color:#9de5ca;font-size:12px}
+.omni-managed-row>small{color:#b9b2d3;flex:1;font-size:11px}
+.omni-managed-chip-list{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0}
+.omni-managed-chip{border:1px solid #5d507b;background:#211d36;border-radius:9px;display:grid;gap:3px;padding:10px 12px}
+.omni-managed-chip strong{color:#f4efff;font-size:11px}
+.omni-managed-chip span{color:#b7b0d7;font-size:9px}
+.omni-managed-sync-error{font-size:11px;line-height:1.5;border:1px solid #a6546c;background:#5923343a;border-radius:8px;padding:10px;color:#ffcbd3}
+.omni-managed-sync-foot{padding-top:11px;margin-top:14px;border-top:1px solid #3a3550}
+@media(max-width:680px){.omni-managed-sync{padding:14px}.omni-managed-form>div{flex-wrap:wrap}.omni-managed-form input,.omni-managed-form button{flex-basis:100%}}
