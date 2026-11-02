@@ -20,6 +20,27 @@ export async function POST(req:Request){
   const profiles:any=await profilesResponse.json().catch(()=>({}));
   if(!profilesResponse.ok||!Array.isArray(profiles.profiles))return invalid('Could not verify your Upload-Post account. Check the saved key and try refreshing.',502);
   if(!profiles.profiles.some((p:any)=>p.username===username))return invalid('The selected social workspace does not belong to your Upload-Post account.',403);
+  // Prefer direct OAuth: a single OmniPost click opens the social network's own
+  // login. Upload-Post's server handles all developer OAuth credentials.
+  const direct=await fetch(BASE+'/oauth/'+platform+'/start',{
+   method:'POST',headers:{...auth,'Content-Type':'application/json'},
+   body:JSON.stringify({profile:username,redirect_url:ORIGIN+'/?social_return=1'}),
+   cache:'no-store',signal:AbortSignal.timeout(15000)
+  });
+  const directJson:any=await direct.json().catch(()=>({}));
+  const loginUrl=String(directJson.authorize_url||'');
+  const allowed=['facebook.com','instagram.com','google.com','youtube.com','x.com','twitter.com','tiktok.com','tiktokapis.com','accounts.google.com'];
+  if(direct.ok&&loginUrl){
+   try{
+    const parsed=new URL(loginUrl);
+    if(parsed.protocol==='https:'&&allowed.some(host=>parsed.hostname===host||parsed.hostname.endsWith('.'+host))){
+     return Response.json({url:loginUrl,provider:'upload-post',profile:username,platform,method:'official-oauth'},{headers:{'Cache-Control':'no-store'}});
+    }
+    return invalid('Provider returned an untrusted login destination. No redirect was performed.',502);
+   }catch{return invalid('Provider returned an invalid login URL.',502)}
+  }
+  // If direct OAuth is not available for this plan or connection, use the
+  // hosted connection page, and finally the provider's account dashboard.
   const payload={
    username,
    redirect_url:ORIGIN+'/?social_return=1',
