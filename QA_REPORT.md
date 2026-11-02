@@ -45,6 +45,28 @@ The status `Developer credentials not configured` cannot legitimately disappear 
 
 **External truth:** The social network must still ask the user to sign in/consent via its own OAuth screen. Accounts are not connected merely because the page loads. Facebook personal profiles may be authenticated, but Facebook Page publishing requires Page ownership; TikTok publishing is unavailable on the Upload-Post free plan. White-label branded provider pages may require a paid plan. This audit does not claim a live OAuth redirect was completed in the user’s browser.
 
+## Studio 2.1 — interface, performance and controls (November 2, 2026)
+
+### Design
+- **Daylight by default:** replaces the dark-heavy workspace with off-white surfaces, lavender/peach hero, crisp typography, clearer borders, and higher-contrast content controls. A Dusk switch in the top bar is persisted per browser.
+- **Purposeful motion:** orbit and floating elements in the hero; subtle hover/focus transitions on statistics, cards and actions; no animation on a reduced-motion setting.
+- **Faster everyday actions:** Ctrl/Cmd+K command menu with keyboard navigation, editable content starters for tips, spotlights, announcements and behind-the-scenes posts, and working CSV export from Content Library.
+- **Copy cleanup:** shorter headings, direct button descriptions and more concise social account onboarding.
+
+### Fixes and performance
+- Overview and Analytics stats now navigate to real filtered content, social connections or scheduled posts.
+- CSV export includes the user's actual visible/filtered posts, uses quoted UTF-8 values and defends against spreadsheet formula injection.
+- Removed loading obsolete demo posts/assets from localStorage while checking a real session.
+- Supabase auth listeners unsubscribe on unmount; the health request aborts on navigation/unmount.
+- Live reads are bounded (250 posts, 100 jobs, 30 native social connections). More records require pagination if the workspace grows beyond that.
+- Platform preview imports and the AI/sidebar/social connection views are split into lazy-loaded client chunks. Media previews are memoized; images decode lazily, and videos preload metadata only.
+- The persistent publishing warning only appears when the managed social connection has not been configured, avoiding an incorrect claim that all five developer apps are mandatory.
+- User-provided Gemini key and official network OAuth/publishing rules are unchanged; this release does not bypass provider approval or free-tier limits.
+
+### Verification
+- Vercel `npm run build` executes mocked assistant, Gemini key, social publishing, and OAuth connection contract tests, followed by a static feature/button action scan and Next.js TypeScript production compilation.
+- Static handlers are **not the same as browser end-to-end success**. Real live publishing and social-login consent require authenticated user action, so do not claim those third-party flows were fully tested by this audit.
+
 ## Known external dependencies — not fake functionality
 
 1. Google Gemini requires a personal key created in Google AI Studio (free tier subject to model availability, quota, and Google's data-use terms). The application cannot obtain another person's API key by itself. End-to-end AI output remains unverified until a signed-in user connects a key and uses Test AI now.
