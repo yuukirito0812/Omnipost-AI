@@ -24,11 +24,10 @@ const NAV:{view:View;label:string;icon:any;group:string}[]=[{view:'overview',lab
 const fresh=():ContentPost=>({...INITIAL_POST,id:'local-'+crypto.randomUUID(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),overrides:{},platforms:[],accountIds:[]});
 const fmt=(s:string)=>s?new Date(s).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'—';
 const clock=(s:string)=>s?new Date(s).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):'';
-const safeRead=(k:string,or:any)=>{try{return JSON.parse(localStorage.getItem(k)||'null')??or}catch{return or}};
 const statusLabel:Record<PostStatus,string>={draft:'Draft',review:'Needs review',scheduled:'Scheduled',queued:'Queued',publishing:'Publishing',published:'Published',partial:'Needs attention',failed:'Failed'};
 const inputDatetime=(d:Date)=>{const shift=d.getTimezoneOffset()*60000;return new Date(d.getTime()-shift).toISOString().slice(0,16)};
 export default function Home(){
- const [view,setView]=useState<View>('overview'),[mobileNav,setMobileNav]=useState(false),[notice,setNotice]=useState<Notice>(null),[paletteOpen,setPaletteOpen]=useState(false),[appearance,setAppearance]=useState<'daylight'|'dusk'>('daylight');
+ const [view,setView]=useState<View>('overview'),[mobileNav,setMobileNav]=useState(false),[notice,setNotice]=useState<Notice>(null),[paletteOpen,setPaletteOpen]=useState(false),[appearance,setAppearance]=useState<'daylight'|'dusk'>('daylight'),[themeReady,setThemeReady]=useState(false);
  const [health,setHealth]=useState<Health>({live:false,server:false,ai:false,providers:{}}),[healthChecked,setHealthChecked]=useState(false),[client,setClient]=useState<SupabaseClient|null>(null),[session,setSession]=useState<any>(null),[email,setEmail]=useState(''),[loginSent,setLoginSent]=useState(false),[authMode,setAuthMode]=useState<'link'|'password'>('link'),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState('');
  const [managed,setManaged]=useState<{configured:boolean;profiles:{username:string;accounts:{platform:string;name:string;handle:string;reauthRequired?:boolean}[];facebookPages?:{id:string;name:string}[];facebookWarning?:string}[]}>({configured:false,profiles:[]}),[managedProfile,setManagedProfile]=useState(''),[managedPlatforms,setManagedPlatforms]=useState<Platform[]>([]),[facebookPageId,setFacebookPageId]=useState('');
  const [accounts,setAccounts]=useState<SocialAccount[]>([]),[posts,setPosts]=useState<ContentPost[]>([]),[jobs,setJobs]=useState<any[]>([]),[assets,setAssets]=useState<{name:string;url:string;type:'image'|'video'}[]>([]),[loading,setLoading]=useState(false);
@@ -52,12 +51,25 @@ export default function Home(){
  }
 
  useEffect(()=>{
-  setBrand(localStorage.getItem('omnipost-brand')||'My Brand');setTimezone(localStorage.getItem('omnipost-tz')||'Asia/Manila');const savedTheme=localStorage.getItem('omnipost-appearance');setAppearance(savedTheme==='dusk'?'dusk':'daylight');
-  fetch('/api/health').then(r=>r.json()).then((h:Health)=>{setHealth(h);setHealthChecked(true);if(h.live){setPosts([]);setAssets([]);const sup=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);setClient(sup);sup.auth.getSession().then(({data})=>setSession(data.session));sup.auth.onAuthStateChange((_evt,s)=>setSession(s));}}).catch(()=>setHealthChecked(true));
-  const msg=new URL(location.href).searchParams.get('connection');if(msg){flash(msg,msg.startsWith('success')?'ok':'bad');window.history.replaceState({},'',location.pathname)}
-  if(new URL(location.href).searchParams.has('social_return')||new URL(location.href).searchParams.has('connect_status'))setView('accounts');
+  let active=true;let subscription:{unsubscribe:()=>void}|null=null;const controller=new AbortController();
+  setBrand(localStorage.getItem('omnipost-brand')||'My Brand');
+  setTimezone(localStorage.getItem('omnipost-tz')||'Asia/Manila');
+  const savedTheme=localStorage.getItem('omnipost-appearance');setAppearance(savedTheme==='dusk'?'dusk':'daylight');setThemeReady(true);
+  fetch('/api/health',{signal:controller.signal,cache:'no-store'}).then(async r=>{if(!r.ok)throw Error('Health request failed');return r.json()}).then((h:Health)=>{
+   if(!active)return;setHealth(h);setHealthChecked(true);
+   if(h.live){
+    const sup=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+    setClient(sup);
+    void sup.auth.getSession().then(({data})=>{if(active)setSession(data.session)});
+    subscription=sup.auth.onAuthStateChange((_event,next)=>{if(active)setSession(next)}).data.subscription;
+   }
+  }).catch(()=>{if(active)setHealthChecked(true)});
+  const url=new URL(location.href),msg=url.searchParams.get('connection');
+  if(msg){flash(msg,msg.startsWith('success')?'ok':'bad');url.searchParams.delete('connection');window.history.replaceState({},'',url.pathname+(url.search||''))}
+  if(url.searchParams.has('social_return')||url.searchParams.has('connect_status'))setView('accounts');
+  return()=>{active=false;controller.abort();subscription?.unsubscribe()}
  },[]);
- useEffect(()=>{document.documentElement.dataset.studioTheme=appearance;localStorage.setItem('omnipost-appearance',appearance)},[appearance]);
+ useEffect(()=>{if(!themeReady)return;document.documentElement.dataset.studioTheme=appearance;localStorage.setItem('omnipost-appearance',appearance)},[appearance,themeReady]);
  useEffect(()=>{const shortcut=(e:KeyboardEvent)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setPaletteOpen(v=>!v)}else if(e.key==='Escape'){setPaletteOpen(false)}};document.addEventListener('keydown',shortcut);return()=>document.removeEventListener('keydown',shortcut)},[]);
  useEffect(()=>{if(!health.live||!client||!session)return;loadLive(client,session.access_token);},[health.live,client,session?.access_token]);
  useEffect(()=>{function closeMenus(e:PointerEvent){const target=e.target as Element;if(!target?.closest?.('.omni-menu-anchor')){setProfileOpen(false);setWorkspaceOpen(false)}}function onEscape(e:KeyboardEvent){if(e.key==='Escape'){setProfileOpen(false);setWorkspaceOpen(false);setShowAlerts(false);setMobileNav(false)}}document.addEventListener('pointerdown',closeMenus);document.addEventListener('keydown',onEscape);return()=>{document.removeEventListener('pointerdown',closeMenus);document.removeEventListener('keydown',onEscape)}},[]);
