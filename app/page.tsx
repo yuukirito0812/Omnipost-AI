@@ -43,7 +43,7 @@ export default function Home(){
  function goToDrafts(){setPostFilter('open');setView('posts')}
  function goToNew(){setDraft(fresh());setScheduleMode('now');setView('compose')}
  function goToSchedule(){setDraft(fresh());setScheduleMode('schedule');setView('compose')}
- function exportContentCSV(){const quote=(value:unknown)=>'"'+String(value??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"';
+ function exportContentCSV(){const quote=(value:unknown)=>{const raw=String(value??'').replace(/\r?\n/g,' ');const safe=/^[=+@-]/.test(raw)?"'"+raw:raw;return '"'+safe.replace(/"/g,'""')+'"'};
   const records=[['Title','Caption','Status','Platforms','Scheduled','Updated','Delivery']];
   filtered.forEach(p=>records.push([p.title,p.caption,p.status,p.platforms.join('|'),p.scheduledAt,p.updatedAt,String((p as any).publishMode||'')]));
   const url=URL.createObjectURL(new Blob(['\uFEFF'+records.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'}));
