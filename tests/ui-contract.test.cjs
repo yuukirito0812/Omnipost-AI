@@ -58,7 +58,7 @@ const critical=[
 
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
-const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g)];
+const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g),...ai.matchAll(/<button\b([^>]*)>/g),...loginHub.matchAll(/<button\b([^>]*)>/g)];
 const inert=controls.filter(m=>!m[1].includes('onClick')&&!m[1].includes('type="submit"'));
 assert.equal(inert.length,0,'Buttons without action or submit semantics: '+inert.map(x=>x[0].slice(0,100)).join('; '));
 console.log('PASS: '+critical.length+' feature contracts; '+controls.length+' button tags checked for click or form handlers.');
