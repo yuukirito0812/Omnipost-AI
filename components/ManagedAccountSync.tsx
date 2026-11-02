@@ -74,10 +74,10 @@ export default function ManagedAccountSync({token,onUpdate}:{token:string|null;o
  return <section className="omni-login-hub" id="omni-login-hub">
    <div className="omni-login-hero">
     <div className="omni-login-hero-title">
-      <span className="omni-login-eyebrow"><ShieldCheck size={15}/> OFFICIAL, SECURE LOGIN</span>
-      <h2>All your socials.<br/><span>One beautifully simple space.</span></h2>
-      <p>Choose a platform, sign in on its official screen, and return to OmniPost. No developer apps, client IDs, or social passwords in this website.</p>
-      <div className="omni-trust-chips"><span><LockKeyhole size={14}/> OAuth login</span><span><CheckCircle2 size={14}/> Private connection</span><span><Sparkles size={14}/> Built for creators</span></div>
+      <span className="omni-login-eyebrow"><ShieldCheck size={15}/> SECURE CONNECTIONS</span>
+      <h2>Your channels.<br/><span>One workspace.</span></h2>
+      <p>Choose a network. Sign in securely. Done.</p>
+      <div className="omni-trust-chips"><span><LockKeyhole size={14}/> OAuth login</span><span><CheckCircle2 size={14}/> Private connection</span><span><Sparkles size={14}/> Connected tools</span></div>
     </div>
     <div className="omni-login-hero-art" aria-hidden="true">
       <div className="omni-login-orb orb-one">◎</div><div className="omni-login-orb orb-two">▶</div><div className="omni-login-orb orb-three">𝕏</div>
@@ -116,7 +116,7 @@ export default function ManagedAccountSync({token,onUpdate}:{token:string|null;o
    {active?.facebookWarning&&<div className="omni-login-explain"><Info size={16}/><span>Facebook is signed in. Publishing to Facebook still requires selecting a Page you manage; personal timeline posting isn't available through this API. <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener noreferrer">Create a Page</a>.</span></div>}
    {error&&<div className="omni-login-error" role="alert">{error}</div>}
    {message&&<div className="omni-login-message" role="status">{message}</div>}
-   <div className="omni-login-bottom"><span><ShieldCheck size={16}/> Connected securely through Upload-Post. OmniPost never sees your Facebook, Instagram, Google, TikTok, or X password.</span><span>Free plan: up to 2 profiles, 10 uploads/month; TikTok and custom-brand login may require upgrading. <a href="https://www.upload-post.com/pricing/" target="_blank" rel="noopener noreferrer">Plan details <ExternalLink size={12}/></a></span></div>
+   <div className="omni-login-bottom"><span><ShieldCheck size={16}/> Official login through Upload-Post. Your passwords stay with the platforms.</span><span>Free plan: up to 2 profiles, 10 uploads/month; TikTok and custom-brand login may require upgrading. <a href="https://www.upload-post.com/pricing/" target="_blank" rel="noopener noreferrer">Plan details <ExternalLink size={12}/></a></span></div>
    {data.configured&&<button className="omni-provider-settings" onClick={()=>setShowAdvanced(v=>!v)} aria-expanded={showAdvanced}><ChevronDown size={14}/> Provider connection settings</button>}
    {showAdvanced&&data.configured&&<div className="omni-provider-settings-panel"><p>These controls unlink only OmniPost's provider integration, not the social accounts themselves. You can manage individual permissions on each social network.</p><button className="outline-btn sm" disabled={busy} onClick={disconnect}><Unplug size={15}/> Disconnect provider</button></div>}
   </section>
