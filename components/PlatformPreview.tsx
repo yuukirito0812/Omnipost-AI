@@ -1,11 +1,12 @@
 'use client';
+import {memo} from 'react';
 import {Heart,MessageCircle,Send,Bookmark,MoreHorizontal,Home,Search,Plus,Play,Volume2,Share2,Repeat2,ThumbsUp,ThumbsDown,UserRound,Music2,Clapperboard,Compass,Menu} from 'lucide-react';
 import type {ContentPost,Platform,SocialAccount} from '../lib/types';
 type Props={platform:Platform;draft:ContentPost;brand:string;accounts:SocialAccount[]};
-function Media({draft,fit='cover'}:{draft:ContentPost;fit?:'cover'|'contain'}){return draft.mediaUrl?(draft.mediaType==='video'?<video src={draft.mediaUrl} controls playsInline className="channel-media" style={{objectFit:fit}}/>:<img src={draft.mediaUrl} alt={draft.altText||'Post visual'} className="channel-media" style={{objectFit:fit}}/>):<div className="channel-empty-media"><Clapperboard size={27}/><span>Upload an image or video to preview it here</span></div>}
-function Avatar({label,src}:{label:string;src?:string}){return src?<img className="channel-avatar" src={src} alt="" />:<div className="channel-avatar channel-avatar-fallback">{(label||'B').slice(0,1).toUpperCase()}</div>}
+function Media({draft,fit='cover'}:{draft:ContentPost;fit?:'cover'|'contain'}){return draft.mediaUrl?(draft.mediaType==='video'?<video src={draft.mediaUrl} controls playsInline preload="metadata" className="channel-media" style={{objectFit:fit}}/>:<img src={draft.mediaUrl} loading="lazy" decoding="async" alt={draft.altText||'Post visual'} className="channel-media" style={{objectFit:fit}}/>):<div className="channel-empty-media"><Clapperboard size={27}/><span>Upload an image or video to preview it here</span></div>}
+function Avatar({label,src}:{label:string;src?:string}){return src?<img className="channel-avatar" src={src} alt="" loading="lazy" decoding="async"/>:<div className="channel-avatar channel-avatar-fallback">{(label||'B').slice(0,1).toUpperCase()}</div>}
 const formatText=(s:string,max=800)=>s.length>max?s.slice(0,max).trimEnd()+'…':s;
-export default function PlatformPreview({platform,draft,brand,accounts}:Props){
+function PlatformPreview({platform,draft,brand,accounts}:Props){
  const account=accounts.find(a=>draft.accountIds.includes(a.id)&&a.platform===platform);
  const label=account?.name||brand||'Your brand';
  const handle=(account?.handle||label.toLowerCase().replace(/[^a-z0-9]/g,'')).replace(/^@/,'');
@@ -50,3 +51,4 @@ export default function PlatformPreview({platform,draft,brand,accounts}:Props){
    {content.length>280&&<div className="channel-format-note">Text exceeds 280 characters; edit your X caption override before publishing.</div>}
   </div>
 }
+export default memo(PlatformPreview);
