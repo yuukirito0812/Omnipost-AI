@@ -34,7 +34,7 @@ export default function CommandPalette({open,onClose,onNavigate,onNewPost,onSche
  return <div className="studio-command-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}} role="presentation">
    <section className="studio-command-window" role="dialog" aria-modal="true" aria-label="Search commands">
     <div className="studio-command-search"><Search size={21}/><input ref={ref} aria-label="Search commands" placeholder="Where do you want to go?" value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={onKey}/><button type="button" aria-label="Close commands" onClick={onClose}><X size={18}/></button></div>
-    <div className="studio-command-results">{found.length?found.map((a,i)=><button type="button" key={a.view} className={'studio-command-item '+(active===i?'selected':'')} onMouseEnter={()=>setActive(i)} onClick={()=>choose(a)}><span className="studio-command-icon"><a.icon size={18}/></span><span><strong>{a.label}</strong><small>{a.hint}</small></span><ArrowUpRight size={16}/></button>):<div className="studio-command-empty">No matching actions</div>}</div>
+    <div className="studio-command-results">{found.length?found.map((a,i)=><button type="button" key={a.view} className={'studio-command-item '+(active===i?'selected':'')} onClick={()=>choose(a)} onMouseEnter={()=>setActive(i)}><span className="studio-command-icon"><a.icon size={18}/></span><span><strong>{a.label}</strong><small>{a.hint}</small></span><ArrowUpRight size={16}/></button>):<div className="studio-command-empty">No matching actions</div>}</div>
     <div className="studio-command-footer"><span><Command size={13}/> K to open</span><span>↑ ↓ Navigate · Enter Select · Esc Close</span></div>
    </section>
  </div>
