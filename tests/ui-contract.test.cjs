@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=path=>fs.readFileSync(path,'utf8');
-const easy=read('components/SimpleSocialConnect.tsx'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
+const loginHub=read('components/ManagedAccountSync.tsx'),loginApi=read('app/api/managed-social/connect/route.ts'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
 const publish=read('app/api/managed-social/publish/route.ts'),postApi=read('app/api/posts/route.ts'),statusApi=read('app/api/managed-social/status/route.ts');
 const critical=[
  ['account menu',page.includes('omni-profile-trigger')&&page.includes('onClick={()=>{setProfileOpen(v=>!v)')],
@@ -26,16 +26,21 @@ const critical=[
  ['social setup guidance',page.includes('<SocialConnectionGuide')&&social.includes('callback')&&social.includes('onCheck')],
  ['complete OAuth readiness',health.includes("'_CLIENT_SECRET'")&&social.includes('serverReady')],
  ['secure redirect links',social.includes('oauth/callback/')&&social.includes('navigator.clipboard')],
- ['managed official-social-login guidance',page.includes('<SimpleSocialConnect')&&easy.includes('https://app.upload-post.com/')&&easy.includes('ten uploads')],
- ['social password privacy',easy.includes('never')||easy.includes("won't collect")],
- ['no false live social connections',easy.includes('Publishing is a separate integration')],
+ ['managed official social login screen',page.includes('<ManagedAccountSync')&&loginHub.includes('omni-login-network')&&loginHub.includes('NETWORKS')],
+ ['social password privacy',loginHub.includes('never sees your Facebook')&&loginApi.includes("username")&&loginApi.includes('userDb(req)')],
+ ['no false live social connections',loginHub.includes('reauthRequired')&&loginHub.includes('connected')],
  ['clickable overview stats and drafts',page.includes('omni-stat-action')&&page.includes("setPostFilter('open')")],
  ['publish now shortcut',page.includes('Post now</b>')&&page.includes("setScheduleMode('now')")],
  ['manual calendar scheduling',postApi.includes('publishMode:status')&&page.includes('MANUAL reminder')],
  ['managed account chooser',page.includes('omni-connected-dest')&&page.includes('setManagedPlatform(p)')],
  ['real provider submission with idempotency',publish.includes('Idempotency-Key')&&publish.includes('/api/upload_text')&&publish.includes('/api/upload_photos')],
  ['live post status refresh and schedule cancellation',statusApi.includes('/api/uploadposts/status?')&&statusApi.includes("method:'DELETE'")],
- ['no premature success',page.includes('if(!result.accepted)throw Error')&&publish.includes('result.success===false')]
+ ['no premature success',page.includes('if(!result.accepted)throw Error')&&publish.includes('result.success===false')],
+ ['one-click OAuth launch backed by private key',loginHub.includes("'/api/managed-social/connect'")&&loginApi.includes('api_key_ciphertext')&&loginApi.includes('generate-jwt')],
+ ['provider validation before redirect',loginApi.includes('profiles.some')&&loginApi.includes('app\\.upload-post')],
+ ['login fallback on free plans',loginApi.includes("method:'dashboard'")&&loginHub.includes('window.location.assign')],
+ ['return from OAuth auto-refresh',loginHub.includes('social_return')&&page.includes("setView('accounts')")],
+ ['advanced developer setup optional',page.includes('advancedSocialOpen')&&!page.includes('<SimpleSocialConnect')]
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
 const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g)];
