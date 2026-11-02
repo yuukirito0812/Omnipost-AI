@@ -34,6 +34,17 @@ The production build runs `npm test && next build`. Tests include:
 
 The status `Developer credentials not configured` cannot legitimately disappear until the account owner creates provider-specific developer applications and configures approved IDs/secrets securely in the deployment. A Gemini API key does not substitute for Meta, Google/YouTube, TikTok, or X OAuth credentials.
 
+## Social login experience — November 2, 2026
+
+- Replaced the previous multi-step managed-social setup and duplicate walkthrough with a premium, responsive, network-by-network login dashboard.
+- Each platform's **Connect** button calls `POST /api/managed-social/connect` with the signed-in user's Supabase session, verifies the saved Upload-Post API credential and the selected `username` belongs to that account, and requests an official OAuth URL from Upload-Post's `/api/uploadposts/oauth/{platform}/start`. It redirects only to an HTTPS URL at a vetted network-owned domain.
+- On providers or plans that do not allow direct OAuth from the app, it requests a scoped 48-hour hosted authorization link; if that is also unavailable, it opens the official Upload-Post account dashboard without requesting Meta, Google, TikTok or X developer IDs from the user.
+- The social login screen can refresh account status after OAuth return, distinguish previously authorized/re-authentication-needed profiles, show the Facebook Page requirement only in the context of **publishing**, and offer provider unlinking only under advanced settings.
+- The existing uploaded creator logo and Carl Vincent Zabala credit remain incorporated. The login view adds gradient brand artwork, responsive platform cards, polished connected states, hover/keyboard accessibility and reduced-motion support.
+- Added `tests/social-connect.test.cjs` to run automatically in the Vercel build; tests cover direct official login, legitimate provider fallback, account ownership checks and malicious redirects.
+
+**External truth:** The social network must still ask the user to sign in/consent via its own OAuth screen. Accounts are not connected merely because the page loads. Facebook personal profiles may be authenticated, but Facebook Page publishing requires Page ownership; TikTok publishing is unavailable on the Upload-Post free plan. White-label branded provider pages may require a paid plan. This audit does not claim a live OAuth redirect was completed in the user’s browser.
+
 ## Known external dependencies — not fake functionality
 
 1. Google Gemini requires a personal key created in Google AI Studio (free tier subject to model availability, quota, and Google's data-use terms). The application cannot obtain another person's API key by itself. End-to-end AI output remains unverified until a signed-in user connects a key and uses Test AI now.
