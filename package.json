@@ -7,7 +7,7 @@
     "build": "npm test && next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "test": "node tests/assistant.test.cjs && node tests/ui-contract.test.cjs && node tests/gemini-key.test.cjs && node tests/publishing.test.cjs",
+    "test": "node tests/assistant.test.cjs && node tests/ui-contract.test.cjs && node tests/gemini-key.test.cjs && node tests/publishing.test.cjs && node tests/social-connect.test.cjs",
     "check": "tsc --noEmit && npm test"
   },
   "dependencies": {
