@@ -28,7 +28,7 @@ const critical=[
  ['complete OAuth readiness',health.includes("'_CLIENT_SECRET'")&&social.includes('serverReady')],
  ['secure redirect links',social.includes('oauth/callback/')&&social.includes('navigator.clipboard')],
  ['managed official social login screen',page.includes('<ManagedAccountSync')&&loginHub.includes('omni-login-network')&&loginHub.includes('NETWORKS')],
- ['social password privacy',loginHub.includes('never sees your Facebook')&&loginApi.includes("username")&&loginApi.includes('userDb(req)')],
+ ['social password privacy',loginHub.includes('passwords stay with the platforms')&&loginApi.includes("username")&&loginApi.includes('userDb(req)')],
  ['no false live social connections',loginHub.includes('reauthRequired')&&loginHub.includes('connected')],
  ['clickable overview stats and drafts',page.includes('omni-stat-action')&&page.includes("setPostFilter('open')")],
  ['publish now shortcut',page.includes('Post now</b>')&&page.includes("setScheduleMode('now')")],
