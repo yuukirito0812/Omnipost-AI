@@ -5,7 +5,8 @@ const SUPPORTED=new Set(['instagram','tiktok','linkedin','facebook','x','youtube
 const safe=(v:unknown,n=200)=>String(v??'').trim().slice(0,n);
 export async function GET(req:Request){
  try{
-  const user=await verifyUser(req),url=new URL(req.url),profile=safe(url.searchParams.get('profile'),130);
+  const user=await verifyUser(req),url=new URL(req.url),profile=safe(url.searchParams.get('profile'),130),requestedPeriod=url.searchParams.get('period')||'last_month';
+  const period=['last_day','last_week','last_month','last_3months','last_year'].includes(requestedPeriod)?requestedPeriod:'last_month';
   if(!profile)throw Error('Choose a client profile first.');
   const db=userDb(req),{data:settings,error}=await db.from('omnipost_managed_social_settings').select('api_key_ciphertext').eq('user_id',user.id).maybeSingle();
   if(error||!settings?.api_key_ciphertext)throw Error('Connect your Upload-Post API key in Social Accounts first.');
@@ -29,7 +30,7 @@ export async function GET(req:Request){
   if(requested.includes('linkedin')&&li)params.set('page_urn',li);
   const [analyticsResponse,totalResponse]=await Promise.all([
    fetch(ROOT+'/api/analytics/'+encodeURIComponent(profile)+'?'+params.toString(),{headers,cache:'no-store',signal:AbortSignal.timeout(22000)}),
-   fetch(ROOT+'/api/uploadposts/total-impressions/'+encodeURIComponent(profile)+'?breakdown=true',{headers,cache:'no-store',signal:AbortSignal.timeout(22000)}).catch(()=>null)
+   fetch(ROOT+'/api/uploadposts/total-impressions/'+encodeURIComponent(profile)+'?'+new URLSearchParams({breakdown:'true',period}).toString(),{headers,cache:'no-store',signal:AbortSignal.timeout(22000)}).catch(()=>null)
   ]);
   const analytics:any=await analyticsResponse.json().catch(()=>({}));
   if(!analyticsResponse.ok)throw Error(String(analytics.message||analytics.error||'Analytics provider request failed ('+analyticsResponse.status+').').slice(0,260));
@@ -40,6 +41,6 @@ export async function GET(req:Request){
   const computedImpressions=impressionValues.reduce((sum,n)=>sum+n,0);
   const suppliedTotal=Number(total?.total_impressions??analytics.total_impressions);
   const totalImpressions=Number.isFinite(suppliedTotal)?suppliedTotal:(impressionValues.length?computedImpressions:null);
-  return Response.json({profile,platforms:platformMetrics,totalImpressions,totalPerPlatform:total?.per_platform||analytics.per_platform||{},totalPerDay:total?.per_day||analytics.per_day||{},omitted,refreshedAt:new Date().toISOString()});
+  return Response.json({profile,period,platforms:platformMetrics,totalImpressions,totalPerPlatform:total?.per_platform||analytics.per_platform||{},totalPerDay:total?.per_day||analytics.per_day||{},omitted,refreshedAt:new Date().toISOString()});
  }catch(e){return fail(e,e instanceof Error&&/session|Sign in/i.test(e.message)?401:502)}
 }
