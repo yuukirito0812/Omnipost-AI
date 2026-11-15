@@ -104,9 +104,9 @@ export async function GET(req:Request){
      for(const review of array(reviewData.reviews||reviewData.data?.reviews||reviewData.data)){
       const reviewer=review.reviewer||review.author||{},reviewName=clip(review.name||review.review_name||review.reviewName,500),reviewId=clip(review.reviewId||review.id||reviewName,280);
       if(!reviewId)continue;
-      const contactId=clip(reviewer.displayName||reviewer.name||reviewer.profilePhotoUrl||('reviewer-'+reviewId),300);
+      const ratingRaw=String(review.starRating||review.rating||'');const ratingMap:Record<string,number>={ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5};const rating=Number.isFinite(Number(ratingRaw))?Number(ratingRaw):ratingMap[ratingRaw.toUpperCase()]||null;const contactId=clip(reviewer.displayName||reviewer.name||reviewer.profilePhotoUrl||('reviewer-'+reviewId),300);
       const body=clip(review.comment||review.text||review.body||'Google Business review',5000);
-      raw.push(eventRecord('',profile,'google_business','review',reviewId,'inbound',body,iso(review.updateTime||review.createTime),{reviewName,reviewId,locationId:chosen,rating:review.starRating||review.rating||null,ownerReply:clip(review.reviewReply?.comment||review.ownerReply?.comment||'',1500)},{external_contact_id:contactId,display_name:clip(reviewer.displayName||reviewer.name||'Google reviewer',180),handle:'',avatar_url:safeUrl(reviewer.profilePhotoUrl)}));
+      raw.push(eventRecord('',profile,'google_business','review',reviewId,'inbound',body,iso(review.updateTime||review.createTime),{reviewName,reviewId,locationId:chosen,rating,ownerReply:clip(review.reviewReply?.comment||review.ownerReply?.comment||'',1500)},{external_contact_id:contactId,display_name:clip(reviewer.displayName||reviewer.name||'Google reviewer',180),handle:'',avatar_url:safeUrl(reviewer.profilePhotoUrl)}));
       const ownerReply=clip(review.reviewReply?.comment||review.ownerReply?.comment||'',1500);
       if(ownerReply)raw.push(eventRecord('',profile,'google_business','review_reply',reviewId+':owner-reply','outbound',ownerReply,iso(review.reviewReply?.updateTime||review.updateTime),{reviewName,reviewId,locationId:chosen},{external_contact_id:contactId,display_name:clip(reviewer.displayName||reviewer.name||'Google reviewer',180),handle:'',avatar_url:safeUrl(reviewer.profilePhotoUrl)}));
      }
@@ -149,7 +149,7 @@ export async function POST(req:Request){
    response=await provider(key,path,visibility==='private'||platform==='instagram'?'POST':'POST',visibility==='private'?{platform,user:profile,message,comment_id:event.external_id}:payload);
    source_type='comment_reply';metadata={parentCommentId:event.external_id,postId:event.metadata?.postId||null,postUrl:event.metadata?.postUrl||null,visibility};
   }else if(action==='send_dm'){
-   if(event.source_type!=='dm'&&contact.platform!=='instagram'&&contact.platform!=='bluesky')throw Error('Select a supported direct-message conversation.');
+   if(event.source_type!=='dm')throw Error('Select a direct-message conversation.');
    if(!DM_PLATFORMS.includes(platform))throw Error('Sending DMs is currently supported for Instagram and Bluesky only.');
    const recipient=clip(event.metadata?.recipientId||contact.external_contact_id,300);
    response=await provider(key,'/api/uploadposts/dms/send','POST',{platform,user:profile,recipient_id:recipient,message});
