@@ -3,7 +3,7 @@ import type {Platform} from '../lib/types';
 import type {ReactNode} from 'react';
 type Props={platform:Platform;size?:number;className?:string;title?:string};
 export default function PlatformIcon({platform,size=24,className='',title}:Props){
- const common={width:size,height:size,viewBox:'0 0 40 40',className,role:'img' as const,'aria-label':title||platform};
+ const common={width:size,height:size,viewBox:'0 0 40 40',className:'platform-brand-icon '+className,role:'img' as const,'aria-label':title||platform};
  const icon:Record<Platform,ReactNode>={
   facebook:<><circle cx="20" cy="20" r="20" fill="#1877F2"/><path fill="#fff" d="M22.4 33V21.8h3.8l.6-4.4h-4.4v-2.8c0-1.3.4-2.2 2.2-2.2H27V8.5c-.4-.1-1.9-.2-3.5-.2-3.5 0-5.9 2.1-5.9 6v3.1h-4v4.4h4V33z"/></>,
   instagram:<><defs><linearGradient id="omni-ig" x1="4" y1="36" x2="36" y2="4" gradientUnits="userSpaceOnUse"><stop stopColor="#FFB347"/><stop offset=".42" stopColor="#F04A83"/><stop offset="1" stopColor="#8549D9"/></linearGradient></defs><rect x="2" y="2" width="36" height="36" rx="11" fill="url(#omni-ig)"/><rect x="9" y="9" width="22" height="22" rx="7" fill="none" stroke="#fff" strokeWidth="2.5"/><circle cx="20" cy="20" r="5.2" fill="none" stroke="#fff" strokeWidth="2.5"/><circle cx="27.4" cy="12.8" r="1.7" fill="#fff"/></>,
