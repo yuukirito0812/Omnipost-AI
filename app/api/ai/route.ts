@@ -1,10 +1,74 @@
 import {verifyUser,fail} from '../../../lib/server';
 import {generateMarketingText,parseAIJson} from '../../../lib/ai-gateway';
+import {PLATFORMS,type Platform} from '../../../lib/types';
 export const runtime='nodejs';
-export async function POST(req:Request){try{await verifyUser(req);const {topic,tone,goal,audience,platforms,brand}=await req.json();if(!String(topic||'').trim())throw Error('Describe your content topic');
- const prompt=`You are an expert social media strategist. Create marketing copy that is accurate, non-deceptive, fluent, engaging, and tailored to selected platforms. No fabricated facts, pricing or testimonials. Return ONLY strict JSON with fields title:string, caption:string, tags:string (space separated hashtags), cta:string, firstComment:string, altText:string, overrides:object keyed by requested platforms with platform-specific ready-to-publish captions. YouTube needs SEO-ready description, TikTok concise hook, Instagram natural engaging copy, Facebook conversational, X concise <=280 characters. Topic: ${String(topic).slice(0,1500)}. Tone: ${String(tone).slice(0,100)}. Objective: ${String(goal).slice(0,100)}. Audience: ${String(audience).slice(0,200)}. Brand: ${String(brand).slice(0,150)}. Platforms: ${Array.isArray(platforms)?platforms.join(','):'all'}.`;
- const raw=await generateMarketingText('You are an expert social media strategist. Output only a valid JSON object. Never invent facts or performance metrics.',prompt,3500,req);
- const result=parseAIJson(raw);
- if(!result||typeof result!=='object'||typeof result.caption!=='string')throw Error('AI returned an unexpected structure. Please try again.');
- return Response.json(result);
- }catch(e){return fail(e);}}
+export const maxDuration=45;
+type Mode='post'|'hooks'|'hashtags'|'calendar'|'repurpose'|'audit'|'ideas'|'replies';
+const MODES=new Set<Mode>(['post','hooks','hashtags','calendar','repurpose','audit','ideas','replies']);
+const clip=(v:unknown,n=1800)=>String(v??'').trim().slice(0,n);
+const cleanPlatforms=(value:unknown):Platform[]=>{
+ const values=Array.isArray(value)?value.filter((v):v is Platform=>typeof v==='string'&&PLATFORMS.includes(v as Platform)):[];
+ return values.length?Array.from(new Set(values)).slice(0,9):['instagram','facebook','youtube','linkedin'];
+};
+const platformGuidance:Record<Platform,string>={
+ instagram:'Instagram: strong first line, readable spacing, useful caption, relevant hashtags. Personal consumer accounts are not supported for API publishing.',
+ facebook:'Facebook: conversational, community-focused, clear CTA. Page publishing only.',
+ tiktok:'TikTok: short spoken-style hook, natural language, compact caption and a clear video concept.',
+ youtube:'YouTube: searchable title, useful description, topic keywords and clear viewer value.',
+ x:'X: concise, conversational, no more than 280 characters for the post text.',
+ linkedin:'LinkedIn: professional insight, practical context and a discussion prompt. Avoid corporate jargon.',
+ threads:'Threads: natural, conversational, short-form copy that invites replies.',
+ pinterest:'Pinterest: descriptive searchable title and keyword-rich pin description; make the visual idea explicit.',
+ google_business:'Google Business Profile: local, factual, concise update with a clear action. Never invent a location or offer.'
+};
+function normalizeProposal(value:any,platforms:Platform[]){
+ const overrides:Partial<Record<Platform,string>>={};
+ for(const p of platforms)if(typeof value?.overrides?.[p]==='string')overrides[p]=clip(value.overrides[p],5000);
+ return {title:clip(value?.title,120),caption:clip(value?.caption,6000),tags:clip(value?.tags,700),cta:clip(value?.cta,400),firstComment:clip(value?.firstComment,700),altText:clip(value?.altText,500),overrides,platforms};
+}
+export async function POST(req:Request){
+ try{
+  await verifyUser(req);
+  const body=await req.json();
+  const mode=(MODES.has(body.mode)?body.mode:'post') as Mode;
+  const topic=clip(body.topic,1800),caption=clip(body.caption,5000),tone=clip(body.tone||'Natural, clear and engaging',100),goal=clip(body.goal||'Engagement',100),audience=clip(body.audience||'General audience',240),brand=clip(body.brand||'My Brand',150),platforms=cleanPlatforms(body.platforms);
+  if(!topic&&!caption)throw Error(mode==='audit'||mode==='replies'?'Paste the post or comment first.':'Add a topic or campaign brief first.');
+  const context=`Brand: ${brand}. Audience: ${audience}. Goal: ${goal}. Tone: ${tone}. Platforms: ${platforms.join(', ')}.
+Platform requirements:
+${platforms.map(p=>'- '+platforms[p]).join('\n')}
+Never fabricate facts, prices, locations, reviews, results, testimonials, statistics, deadlines, availability, or trending status. Use clear placeholders when facts are missing. Avoid cringe, filler, clickbait, generic AI phrases and excessive emojis. Make copy sound like a capable human SMM wrote it.`;
+  const specs:Record<Mode,string>={
+   post:`Create one ready-to-edit social post. Return strict JSON with title, caption, tags (hashtags), cta, firstComment, altText, and overrides (object with one platform-specific caption for every selected platform). Keep the master caption useful and make every override native to its channel. Do not repeat the same generic copy across all platforms.`,
+   hooks:`Create 8 distinct opening hooks for the topic. Mix curiosity, useful insight, relatable situations and clear value. No fake urgency or clickbait. Return strict JSON {hooks:string[]}.`,
+   hashtags:`Suggest 12 relevant, specific hashtags for the topic and selected channels. Mix broad and niche tags, avoid spam and never claim a tag is trending. Return strict JSON {hashtags:string[],note:string}.`,
+   calendar:`Create a practical 7-day social content plan for the brand. Vary formats and goals; do not make every day a sales post. Each entry must be a complete, editable draft. Return strict JSON {calendarPlan:[{title,caption,tags,cta,firstComment,altText,platforms,overrides}]}. Use 7 entries and only selected platforms. No dates are needed; the user will choose a schedule.`,
+   repurpose:`Repurpose the supplied source post into distinct platform-native captions. Keep the original facts intact; do not add claims. Return strict JSON {title,tags,cta,overrides:{platform:caption}} for each selected platform, plus a concise master caption.`,
+   audit:`Audit the supplied caption as a practical SMM editor. Assess clarity, opening hook, audience fit, readability, CTA and platform fit. Return strict JSON {score:number (0-100),strengths:string[],improvements:string[],rewrite:string,reason:string}. Be honest; do not invent performance metrics.`,
+   ideas:`Generate 10 distinct content ideas for the brand and audience. Include a mix of educational, community, proof/process (without fabricated testimonials), promotional and conversation-led ideas. Return strict JSON {ideas:[{title,angle,format,goal,hook}]}.`,
+   replies:`Write 6 natural comment/DM reply options for the supplied message. Include friendly, concise, helpful and boundary-setting variations as appropriate. Do not promise a price, refund, availability or action not supplied. Return strict JSON {replies:string[]}.`
+  };
+  const instructions='You are Omni, a senior social media strategist and channel editor. Produce accurate, useful and publishable work. Follow the requested JSON schema exactly. '+context;
+  const prompt=`TASK: ${specs[mode]}\nBRIEF / TOPIC: ${topic||'(use source below)'}\nSOURCE CAPTION / MESSAGE: ${caption||'(none)'}\n${context}`;
+  const raw=await generateMarketingText(instructions,prompt,mode==='calendar'?5200:mode==='ideas'?3000:3600,req);
+  const result=parseAIJson(raw);
+  if(!result||typeof result!=='object')throw Error('AI returned an unexpected result. Try again with a shorter brief.');
+  if(mode==='post'){
+   if(typeof result.caption!=='string'||!result.caption.trim())throw Error('AI could not create a complete caption. Please try again.');
+   return Response.json({mode,...normalizeProposal(result,platforms)});
+  }
+  if(mode==='repurpose'){
+   const normalized=normalizeProposal(result,platforms);
+   if(!Object.keys(normalized.overrides).length)throw Error('AI did not return platform-specific versions. Try again.');
+   return Response.json({mode,...normalized});
+  }
+  if(mode==='calendar'){
+   const calendarPlan=Array.isArray(result.calendarPlan)?result.calendarPlan.slice(0,7).map((p:any)=>normalizeProposal(p,cleanPlatforms(p.platforms).filter(x=>platforms.includes(x)))).filter((p:any)=>p.title||p.caption):[];
+   if(calendarPlan.length<3)throw Error('AI returned too few complete content ideas. Try again.');
+   return Response.json({mode,calendarPlan,reply:clip(result.reply||'Your 7-day content plan is ready.',500)});
+  }
+  if(mode==='audit')return Response.json({mode,score:Math.max(0,Math.min(100,Number(result.score)||0)),strengths:Array.isArray(result.strengths)?result.strengths.slice(0,6).map((v:any)=>clip(v,250)):[],improvements:Array.isArray(result.improvements)?result.improvements.slice(0,6).map((v:any)=>clip(v,250)):[],rewrite:clip(result.rewrite,5000),reason:clip(result.reason,600)});
+  if(mode==='hooks'||mode==='hashtags'||mode==='replies')return Response.json({mode,items:(Array.isArray(result[mode])?result[mode]:Array.isArray(result.items)?result.items:[]).slice(0,12).map((v:any)=>clip(typeof v==='string'?v:v?.text||v?.reply||v?.hook||'',500)).filter(Boolean),note:clip(result.note,400)});
+  if(mode==='ideas')return Response.json({mode,ideas:(Array.isArray(result.ideas)?result.ideas:[]).slice(0,10).map((v:any)=>typeof v==='string'?{title:clip(v,120),angle:'',format:'Post',goal:'Engagement',hook:''}:{title:clip(v.title,120),angle:clip(v.angle,300),format:clip(v.format,80),goal:clip(v.goal,80),hook:clip(v.hook,250)}).filter((v:any)=>v.title)});
+  return Response.json({mode,...result});
+ }catch(e){return fail(e,e instanceof Error&&/Invalid or expired|sign in/i.test(e.message)?401:500)}
+}
