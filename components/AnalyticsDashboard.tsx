@@ -3,7 +3,8 @@ import {useEffect,useMemo,useState} from 'react';
 import {Activity,AlertCircle,ArrowRight,ArrowUpRight,BarChart3,CalendarClock,CheckCircle2,Clock3,Eye,Lightbulb,Loader2,RefreshCw,Sparkles,Target,TrendingUp,Users,Video} from 'lucide-react';
 import PlatformIcon from './PlatformIcon';
 import type {Platform} from '../lib/types';
-type Snapshot={profile:string;platforms:Record<string,any>;totalImpressions:number|null;totalPerPlatform:Record<string,number>;totalPerDay:Record<string,number>;omitted:string[];refreshedAt:string};
+type Period='last_day'|'last_week'|'last_month'|'last_3months'|'last_year';
+type Snapshot={profile:string;period?:Period;platforms:Record<string,any>;totalImpressions:number|null;totalPerPlatform:Record<string,number>;totalPerDay:Record<string,number>;omitted:string[];refreshedAt:string};
 type Analysis={summary:string;wins:string[];opportunities:string[];nextActions:string[];platformNotes:{platform:string;observation:string;recommendation:string}[]};
 const LABELS:Record<string,string>={instagram:'Instagram',facebook:'Facebook',tiktok:'TikTok',youtube:'YouTube',x:'X',linkedin:'LinkedIn',threads:'Threads',pinterest:'Pinterest'};
 const METRIC_LABELS:Record<string,string>={
@@ -42,17 +43,17 @@ function extractMetrics(input:any){
 }
 function safeNumber(value:any){const n=Number(value);return Number.isFinite(n)?n:null}
 export default function AnalyticsDashboard({token,profile,facebookPageId,linkedinPageId,aiReady,brand,onConnect,onAISettings}:{token:string|null;profile:string;facebookPageId:string;linkedinPageId:string;aiReady:boolean;brand:string;onConnect:()=>void;onAISettings:()=>void}){
- const [snapshot,setSnapshot]=useState<Snapshot|null>(null),[loading,setLoading]=useState(false),[error,setError]=useState(''),[refreshKey,setRefreshKey]=useState(0),[analysis,setAnalysis]=useState<Analysis|null>(null),[analysing,setAnalysing]=useState(false),[analysisError,setAnalysisError]=useState('');
+ const [snapshot,setSnapshot]=useState<Snapshot|null>(null),[loading,setLoading]=useState(false),[error,setError]=useState(''),[refreshKey,setRefreshKey]=useState(0),[period,setPeriod]=useState<Period>('last_month'),[analysis,setAnalysis]=useState<Analysis|null>(null),[analysing,setAnalysing]=useState(false),[analysisError,setAnalysisError]=useState('');
  useEffect(()=>{
   if(!token||!profile){setSnapshot(null);return}
   const controller=new AbortController();setLoading(true);setError('');setAnalysis(null);setAnalysisError('');
-  const params=new URLSearchParams({profile});if(facebookPageId)params.set('facebookPageId',facebookPageId);if(linkedinPageId)params.set('linkedinPageId',linkedinPageId);
+  const params=new URLSearchParams({profile,period});if(facebookPageId)params.set('facebookPageId',facebookPageId);if(linkedinPageId)params.set('linkedinPageId',linkedinPageId);
   fetch('/api/managed-social/analytics?'+params.toString(),{headers:{Authorization:'Bearer '+token},cache:'no-store',signal:controller.signal})
    .then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error||'Could not load social analytics.');return j as Snapshot})
    .then(setSnapshot).catch(e=>{if(!controller.signal.aborted)setError(e instanceof Error?e.message:'Analytics request failed.')})
    .finally(()=>{if(!controller.signal.aborted)setLoading(false)});
   return ()=>controller.abort();
- },[token,profile,facebookPageId,linkedinPageId,refreshKey]);
+ },[token,profile,facebookPageId,linkedinPageId,period,refreshKey]);
  const channels=useMemo(()=>Object.entries(snapshot?.platforms||{}).filter(([,v])=>v&&typeof v==='object'),[snapshot]);
  const metricCount=channels.reduce((n,[,v])=>n+extractMetrics(v).length,0);
  const totalImpressions=safeNumber(snapshot?.totalImpressions);
@@ -69,9 +70,10 @@ export default function AnalyticsDashboard({token,profile,facebookPageId,linkedi
   finally{setAnalysing(false)}
  }
  const refreshed=snapshot?.refreshedAt?new Date(snapshot.refreshedAt).toLocaleString():null;
+ const periodLabel:Record<Period,string>={last_day:'Last 24 hours',last_week:'Last 7 days',last_month:'Last 30 days',last_3months:'Last 3 months',last_year:'Last 12 months'};
  if(!profile)return <section className="panel analytics-empty"><div className="analytics-empty-icon"><BarChart3 size={26}/></div><h3>Connect a social client to see real performance</h3><p>Link your Upload-Post workspace, choose a client profile and connect its social channels. OmniPost will show provider-reported metrics here — not made-up demo numbers.</p><button className="primary-btn" onClick={onConnect}>Connect social accounts <ArrowRight size={15}/></button></section>;
  return <div className="analytics-dashboard">
-  <div className="analytics-toolbar"><div><span className="analytics-live-dot"/><strong>Live provider insights</strong><span className="analytics-profile-label">{profile}</span>{refreshed&&<small>Updated {refreshed}</small>}</div><button type="button" className="outline-btn sm" disabled={loading} onClick={()=>setRefreshKey(v=>v+1)}>{loading?<Loader2 size={14} className="spin"/>:<RefreshCw size={14}/>} Refresh metrics</button></div>
+  <div className="analytics-toolbar"><div><span className="analytics-live-dot"/><strong>Live provider insights</strong><span className="analytics-profile-label">{profile}</span>{refreshed&&<small>Updated {refreshed}</small>}</div><div className="analytics-toolbar-actions"><label>Impression period<select aria-label="Impression reporting period" value={period} onChange={e=>setPeriod(e.target.value as Period)}><option value="last_day">Last 24 hours</option><option value="last_week">Last 7 days</option><option value="last_month">Last 30 days</option><option value="last_3months">Last 3 months</option><option value="last_year">Last 12 months</option></select></label><button type="button" className="outline-btn sm" disabled={loading} onClick={()=>setRefreshKey(v=>v+1)}>{loading?<Loader2 size={14} className="spin"/>:<RefreshCw size={14}/>} Refresh</button></div></div>
   {error&&<div className="analytics-alert"><AlertCircle size={16}/><span>{error}</span><button onClick={()=>setRefreshKey(v=>v+1)}>Try again</button></div>}
   {loading&&!snapshot&&<div className="analytics-loading"><Loader2 size={24} className="spin"/><span>Loading verified metrics from connected platforms…</span></div>}
   {snapshot&&<>
