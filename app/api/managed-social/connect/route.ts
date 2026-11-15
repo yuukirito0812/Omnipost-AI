@@ -1,7 +1,7 @@
 import {verifyUser,userDb,decrypt} from '../../../../lib/server';
 export const runtime='nodejs';
 const BASE='https://api.upload-post.com/api/uploadposts';
-const SUPPORTED=new Set(['facebook','instagram','youtube','x','tiktok']);
+const SUPPORTED=new Set(['facebook','instagram','youtube','x','tiktok','linkedin','threads','pinterest','google_business']);
 const ORIGIN='https://omnipost-ai-theta.vercel.app';
 const invalid=(error:string,status=400)=>Response.json({error},{status,headers:{'Cache-Control':'no-store'}});
 export async function POST(req:Request){
@@ -29,7 +29,7 @@ export async function POST(req:Request){
   });
   const directJson:any=await direct.json().catch(()=>({}));
   const loginUrl=String(directJson.authorize_url||'');
-  const allowed=['facebook.com','instagram.com','google.com','youtube.com','x.com','twitter.com','tiktok.com','tiktokapis.com','accounts.google.com'];
+  const allowed=['facebook.com','instagram.com','google.com','youtube.com','x.com','twitter.com','tiktok.com','tiktokapis.com','accounts.google.com','linkedin.com','threads.net','threads.com','pinterest.com'];
   if(direct.ok&&loginUrl){
    try{
     const parsed=new URL(loginUrl);
@@ -46,7 +46,7 @@ export async function POST(req:Request){
    redirect_url:ORIGIN+'/?social_return=1',
    logo_image:ORIGIN+'/omnipost-mark.svg',
    redirect_button_text:'Back to OmniPost AI',
-   connect_title:'Connect '+({x:'X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'} as Record<string,string>)[platform],
+   connect_title:'Connect '+({x:'X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok',linkedin:'LinkedIn',threads:'Threads',pinterest:'Pinterest',google_business:'Google Business Profile'} as Record<string,string>)[platform],
    connect_description:'Sign in on the official social platform to link your account securely to OmniPost AI by Carl Vincent Zabala.',
    platforms:[platform],
    show_calendar:false,
