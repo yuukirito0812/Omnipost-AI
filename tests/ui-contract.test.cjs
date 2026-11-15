@@ -63,16 +63,14 @@ const critical=[
  ['Instagram professional account guidance',loginHub.includes('Business or Creator account')&&loginHub.includes('personal consumer accounts cannot publish')],
  ['managed OAuth supports more channels',loginApi.includes("'linkedin','threads','pinterest','google_business'")&&loginApi.includes('linkedin.com')&&loginApi.includes('threads.net')],
  ['AI SMM toolkit actions',aiStudio.includes("id:'repurpose'")&&aiStudio.includes("id:'calendar'")&&aiStudio.includes("id:'audit'")&&aiStudio.includes("id:'replies'")],
- ['AI toolkit is connected to authenticated endpoint',aiStudio.includes("fetch('/api/ai'")&&aiStudio.includes('Authorization:Bearer')&&aiRoute.includes("const MODES=new Set")],
+ ['AI toolkit is connected to authenticated endpoint',aiStudio.includes("fetch('/api/ai'")&&aiStudio.includes("Authorization:'Bearer '")&&aiRoute.includes("const MODES=new Set")],
  ['AI calendar saved as drafts',aiStudio.includes('onSavePlan(result.calendarPlan||[])')&&aiStudio.includes('Save plan as drafts')],
  ['verified Gemini free models',routes.includes('gemini-3.5-flash')&&routes.includes('gemini-3.1-flash-lite')&&routes.includes('ALLOWED_MODELS')],
  ['secure Gemini model switching',routes.includes('export async function PATCH')&&routes.includes('decrypt(data.key_ciphertext)')&&page.includes("authApi('/api/ai/settings','PATCH'")],
  ['channel-specific content requirements',aiRoute.includes('platformGuidance')&&aiRoute.includes('Google Business Profile')]
- ]
-
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
-const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g),...ai.matchAll(/<button\b([^>]*)>/g),...loginHub.matchAll(/<button\b([^>]*)>/g)];
+const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g),...ai.matchAll(/<button\b([^>]*)>/g),...aiStudio.matchAll(/<button\b([^>]*)>/g),...loginHub.matchAll(/<button\b([^>]*)>/g)];
 const inert=controls.filter(m=>!m[1].includes('onClick')&&!m[1].includes('type="submit"'));
 assert.equal(inert.length,0,'Buttons without action or submit semantics: '+inert.map(x=>x[0].slice(0,100)).join('; '));
 console.log('PASS: '+critical.length+' feature contracts; '+controls.length+' button tags checked for click or form handlers.');
