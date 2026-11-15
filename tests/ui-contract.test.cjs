@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=path=>fs.readFileSync(path,'utf8');
 const loginHub=read('components/ManagedAccountSync.tsx'),loginApi=read('app/api/managed-social/connect/route.ts'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
 const publish=read('app/api/managed-social/publish/route.ts'),postApi=read('app/api/posts/route.ts'),statusApi=read('app/api/managed-social/status/route.ts');
-const studio=read('app/studio.css'),commands=read('components/CommandPalette.tsx'),aiStudio=read('components/AIStudioPanel.tsx'),aiRoute=read('app/api/ai/route.ts'),platformIcon=read('components/PlatformIcon.tsx'),types=read('lib/types.ts'),managedRoute=read('app/api/managed-social/route.ts');
+const studio=read('app/studio.css'),commands=read('components/CommandPalette.tsx'),aiStudio=read('components/AIStudioPanel.tsx'),aiRoute=read('app/api/ai/route.ts'),platformIcon=read('components/PlatformIcon.tsx'),types=read('lib/types.ts'),managedRoute=read('app/api/managed-social/route.ts'),analytics=read('components/AnalyticsDashboard.tsx'),analyticsApi=read('app/api/managed-social/analytics/route.ts');
 const critical=[
  ['account menu',page.includes('omni-profile-trigger')&&page.includes('onClick={()=>{setProfileOpen(v=>!v)')],
  ['workspace menu',page.includes('omni-workspace-trigger')&&page.includes('setWorkspaceOpen(v=>!v)')],
@@ -67,7 +67,12 @@ const critical=[
  ['AI calendar saved as drafts',aiStudio.includes('onSavePlan(result.calendarPlan||[])')&&aiStudio.includes('Save plan as drafts')],
  ['verified Gemini free models',routes.includes('gemini-3.5-flash')&&routes.includes('gemini-3.1-flash-lite')&&routes.includes('ALLOWED_MODELS')],
  ['secure Gemini model switching',routes.includes('export async function PATCH')&&routes.includes('decrypt(data.key_ciphertext)')&&page.includes("authApi('/api/ai/settings','PATCH'")],
- ['channel-specific content requirements',aiRoute.includes('platformGuidance')&&aiRoute.includes('Google Business Profile')]
+ ['channel-specific content requirements',aiRoute.includes('platformGuidance')&&aiRoute.includes('Google Business Profile')],
+ ['live analytics route uses authenticated provider profile',analyticsApi.includes("verifyUser(req)")&&analyticsApi.includes("api/analytics/")&&analyticsApi.includes("api_key_ciphertext")],
+ ['analytics dashboard shows provider metrics',analytics.includes("Live provider insights")&&analytics.includes("Performance by platform")&&analytics.includes("extractMetrics")],
+ ['analytics does not invent missing metrics',analytics.includes("Not supplied by this provider response")&&analytics.includes("never estimated")],
+ ['AI performance coach uses real analytics payload',analytics.includes("mode:'performance'")&&analytics.includes('snapshot.platforms')&&aiRoute.includes("mode==='performance'")],
+ ['analytics refresh and account destinations',analytics.includes('setRefreshKey(v=>v+1)')&&page.includes('facebookPageId={facebookPageId}')&&page.includes('linkedinPageId={linkedinPageId}')],
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
 const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g),...ai.matchAll(/<button\b([^>]*)>/g),...aiStudio.matchAll(/<button\b([^>]*)>/g),...loginHub.matchAll(/<button\b([^>]*)>/g)];
