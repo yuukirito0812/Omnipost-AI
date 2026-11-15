@@ -43,7 +43,7 @@ function normalizeDm(platform:string,profile:string,conversation:any,message:any
  const occurred=iso(message.timestamp||message.created_at||message.createdAt||conversation.updated_at||conversation.last_message_at);
  const external=clip(message.id||message.message_id||('dm:'+conversationId+':'+occurred+':'+body.slice(0,55)),300);
  const name=clip(participant.display_name||participant.name||participant.username||participant.handle||sender.username||'Social contact',180);
- return eventRecord('',profile,platform,'dm',external,direction,body,occurred,{conversationId,recipientId:contactId,attachments:array(message.attachments).slice(0,4),replyTo:clip(message.reply_to||message.replyTo,200),messageIndex:index},{external_contact_id:contactId,display_name:name,handle:clip(participant.username||participant.handle,180),avatar_url:safeUrl(participant.avatar||participant.profile_picture||participant.avatar_url)});
+ return eventRecord('',profile,platform,'dm',external,direction,body,occurred,{conversationId,recipientId:contactId,attachments:array(message.attachments).slice(0,4).map((a:any)=>({type:clip(a.type||a.mime_type||'file',40),url:safeUrl(a.url||a.media_url||a.download_url),previewUrl:safeUrl(a.preview_url||a.thumbnail_url),name:clip(a.name||a.filename||'',120)})).filter((a:any)=>a.url||a.previewUrl),replyTo:clip(message.reply_to||message.replyTo,200),messageIndex:index},{external_contact_id:contactId,display_name:name,handle:clip(participant.username||participant.handle,180),avatar_url:safeUrl(participant.avatar||participant.profile_picture||participant.avatar_url)});
 }
 async function persist(req:Request,userId:string,profile:string,rawEvents:any[]){
  const db=userDb(req),grouped=new Map<string,any>();
