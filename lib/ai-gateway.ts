@@ -2,7 +2,7 @@ import {generateText} from 'ai';
 import {decrypt,userDb} from './server';
 
 export async function generateMarketingText(instructions:string,prompt:string,maxOutputTokens=4200,req?:Request){
- let key=process.env.GEMINI_API_KEY||'', model=process.env.GEMINI_MODEL||'gemini-2.5-flash';
+ let key=process.env.GEMINI_API_KEY||'', model=process.env.GEMINI_MODEL||'gemini-3.5-flash';
  if(req){
   const {data,error}=await userDb(req).from('omnipost_user_ai_settings').select('key_ciphertext,model').maybeSingle();
   if(error)throw Error('Could not load AI settings. Please reconnect your Gemini key in Settings.');
