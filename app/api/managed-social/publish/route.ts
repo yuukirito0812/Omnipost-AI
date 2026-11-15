@@ -51,7 +51,7 @@ export async function POST(req:Request){
    }
   }
   if(post.mediaType==='video'&& !post.mediaUrl)return failure(400,'Please upload a video first.');
-  if(!post.mediaUrl&&selected.some(p=>!['facebook','x'].includes(p)))return failure(400,'Text-only posts can be sent to Facebook Pages and X. Add a photo or video for your other selected platforms.');
+  if(!post.mediaUrl&&selected.some(p=>['instagram','tiktok','youtube','pinterest'].includes(p)))return failure(400,'Instagram, TikTok, YouTube and Pinterest need an image or video. Add media or remove those channels.');
   if(post.mediaType==='image'&&selected.includes('youtube'))return failure(400,'YouTube requires video, not a still image. Remove YouTube or attach a video.');
   if(post.mediaUrl&&!validMedia(user.id,post.mediaUrl))return failure(400,'Media must be uploaded to your private OmniPost media folder before publishing.');
   const id=post.id&&/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(post.id)?post.id:randomUUID();
