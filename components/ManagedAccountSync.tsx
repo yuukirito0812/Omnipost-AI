@@ -61,7 +61,7 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
  }
  async function login(platform:SocialID){
   if(starting||!data.configured)return;
-  if(platform==='tiktok'&&String(data.plan||'').toLowerCase().includes('free')){setError('TikTok is not included with the Upload-Post free plan. Other networks can connect without an upgrade.');return;}
+  if(platform==='tiktok'&&isFree){setError('TikTok is not included with the Upload-Post free plan. Other networks can connect without an upgrade.');return;}
   setStarting(platform);setError('');setMessage('');
   try{
    const result=await request('POST',{profile:active?.username||profile,platform},'/api/managed-social/connect');
@@ -76,7 +76,7 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
  const active=data.profiles.find(p=>p.username===(selectedProfile||profile))||data.profiles[0];
  const connected=active?.accounts||[];
  const count=connected.filter(a=>!a.reauthRequired).length;
- const isFree=['default','free'].includes(String(data.plan||'').toLowerCase());
+ const planName=String(data.plan||'').toLowerCase();const isFree=planName==='default'||planName==='free'||planName.includes('free');
  const chosenPage=active?.facebookPages?.find(p=>p.id===selectedFacebookPageId)||active?.facebookPages?.[0];
  return <section className="omni-login-hub" id="omni-login-hub">
    <div className="omni-login-hero">
