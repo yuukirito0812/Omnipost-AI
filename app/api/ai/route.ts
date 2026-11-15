@@ -50,7 +50,7 @@ Never fabricate facts, prices, locations, reviews, results, testimonials, statis
    ,performance:`Analyze the supplied real social analytics. Return strict JSON {summary:string,wins:string[],opportunities:string[],nextActions:string[],platformNotes:[{platform,observation,recommendation}]}. Separate measured facts from hypotheses. Compare platforms only where metrics are comparable. Do not invent missing numbers, targets, causes, or benchmarks. Give 3 prioritized actions that can be tested next week.`
   };
   const instructions='You are Omni, a senior social media strategist and channel editor. Produce accurate, useful and publishable work. Follow the requested JSON schema exactly. '+context;
-  const prompt=`TASK: ${specs[mode]}\nBRIEF / TOPIC: ${topic||'(use source below)'}\nSOURCE CAPTION / MESSAGE: ${caption||'(none)'}\n${context}`;
+  const prompt=`TASK: ${specs[mode]}\nBRIEF / TOPIC: ${topic||'(use source below)'}\nSOURCE CAPTION / MESSAGE: ${caption||'(none)'}\nINTERACTION CONTEXT: ${interactionContext||'(none)'}\n${context}`;
   const raw=await generateMarketingText(instructions,prompt,mode==='calendar'?5200:mode==='ideas'?3000:3600,req);
   const result=parseAIJson(raw);
   if(!result||typeof result!=='object')throw Error('AI returned an unexpected result. Try again with a shorter brief.');
