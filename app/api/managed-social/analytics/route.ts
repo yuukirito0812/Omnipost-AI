@@ -34,6 +34,11 @@ export async function GET(req:Request){
   const analytics:any=await analyticsResponse.json().catch(()=>({}));
   if(!analyticsResponse.ok)throw Error(String(analytics.message||analytics.error||'Analytics provider request failed ('+analyticsResponse.status+').').slice(0,260));
   let total:any=null;if(totalResponse?.ok)total=await totalResponse.json().catch(()=>null);
-  return Response.json({profile,platforms:Object.fromEntries(requested.map(p=>[p,analytics[p]||null])),totalImpressions:total?.total_impressions??null,totalPerPlatform:total?.per_platform||{},totalPerDay:total?.per_day||{},omitted,refreshedAt:new Date().toISOString()});
+  const metricsByPlatform=analytics.platforms||analytics.analytics||analytics.data||analytics;
+  const platformMetrics=Object.fromEntries(requested.map(p=>[p,metricsByPlatform?.[p]??null]));
+  const computedImpressions=requested.reduce((sum,p)=>{const v=platformMetrics[p],n=Number(v?.impressions??v?.total_impressions);return sum+(Number.isFinite(n)?n:0)},0);
+  const suppliedTotal=Number(total?.total_impressions??analytics.total_impressions);
+  const totalImpressions=Number.isFinite(suppliedTotal)?suppliedTotal:(computedImpressions>0?computedImpressions:null);
+  return Response.json({profile,platforms:platformMetrics,totalImpressions,totalPerPlatform:total?.per_platform||analytics.per_platform||{},totalPerDay:total?.per_day||analytics.per_day||{},omitted,refreshedAt:new Date().toISOString()});
  }catch(e){return fail(e,e instanceof Error&&/session|Sign in/i.test(e.message)?401:502)}
 }
