@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {AlertCircle,ArrowDownLeft,ArrowUpRight,AtSign,CalendarClock,Check,CheckCircle2,ChevronDown,Clock3,Filter,Flag,Inbox,Loader2,Mail,MessageCircle,MessageSquareText,Plus,RefreshCw,Search,Send,ShieldCheck,Sparkles,Star,StickyNote,Tag,UserRound,Users,WifiOff} from 'lucide-react';
+import {AlertCircle,ArrowDownLeft,ArrowUpRight,CalendarClock,Check,CheckCircle2,ChevronDown,Filter,Inbox,Loader2,MessageCircle,MessageSquareText,Plus,RefreshCw,Search,Send,ShieldCheck,Sparkles,Star,StickyNote,Users,WifiOff} from 'lucide-react';
 type Profile={username:string;accounts:{platform:string;name:string;handle:string;avatar?:string;reauthRequired?:boolean}[];googleBusinessLocations?:{id:string;name:string}[];linkedinPages?:{id:string;name:string}[]};
 type Contact={id:string;profile_username:string;platform:string;external_contact_id:string;display_name:string;handle:string;avatar_url?:string|null;status:'new'|'open'|'waiting'|'resolved';priority:'normal'|'high'|'urgent';notes:string;tags:string[];follow_up_at:string|null;last_interaction_at:string|null};
 type Event={id:string;contact_id:string;profile_username:string;platform:string;source_type:string;external_id:string|null;direction:'inbound'|'outbound'|'internal';body:string;metadata:any;occurred_at:string};
@@ -40,7 +40,7 @@ export default function CommunityCenter({token,profile,profiles,onProfileChange,
   const q=search.trim().toLowerCase();if(q&&![e.body,c?.display_name,c?.handle,PLATFORM[e.platform],e.metadata?.postCaption].some(v=>String(v||'').toLowerCase().includes(q)))return false;
   return true;
  });
- const selectedEvent=events.find(e=>e.id===selectedEventId&&['comment','dm','review'].includes(e.source_type))||filtered[0]||null;
+ const selectedEvent=filtered.find(e=>e.id===selectedEventId)||filtered[0]||null;
  const selectedContact=selectedEvent?contactMap.get(selectedEvent.contact_id)||null:null;
  const timeline=selectedContact?events.filter(e=>e.contact_id===selectedContact.id).sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at)):[];
  const needsReply=contacts.filter(c=>c.status==='new'||c.status==='open').length,dueFollowUps=contacts.filter(c=>c.follow_up_at&&Date.parse(c.follow_up_at)<=Date.now()&&c.status!=='resolved').length;
@@ -52,7 +52,7 @@ export default function CommunityCenter({token,profile,profiles,onProfileChange,
  }
  async function draftReply(){
   if(!selectedEvent)return;if(!aiReady){onAISettings();return}setAiBusy(true);setError('');setAiRationale('');setAiReview(false);
-  try{const r=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({mode:'community_reply',topic:'Respond to this customer interaction',caption:selectedEvent.body,tone,goal:'Resolve the customer question while protecting trust in the brand',audience:'A customer or community member',brand,platforms:[selectedEvent.platform],interactionContext:JSON.stringify({type:kindOf(selectedEvent),rating:selectedEvent.metadata?.rating||null,postCaption:selectedEvent.metadata?.postCaption||''})})});const j=await r.json();if(!r.ok)throw Error(j.error||'AI could not draft a reply.');setReply(j.reply||'');setAiRationale(j.rationale||'');setAiReview(j.needsHumanReview===true);if(j.needsHumanReview)setError('AI flagged this interaction for human review. Check the reply carefully before sending.');}
+  try{const r=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({mode:'community_reply',topic:'Respond to this customer interaction',caption:selectedEvent.body,tone,goal:'Resolve the customer question while protecting trust in the brand',audience:'A customer or community member',brand,platforms:[selectedEvent.platform],interactionContext:JSON.stringify({type:kindOf(selectedEvent),platform:selectedEvent.platform,rating:selectedEvent.metadata?.rating||null,postCaption:selectedEvent.metadata?.postCaption||''})})});const j=await r.json();if(!r.ok)throw Error(j.error||'AI could not draft a reply.');setReply(j.reply||'');setAiRationale(j.rationale||'');setAiReview(j.needsHumanReview===true);if(j.needsHumanReview)setError('AI flagged this interaction for human review. Check the reply carefully before sending.');}
   catch(e){setError(e instanceof Error?e.message:String(e))}finally{setAiBusy(false)}
  }
  async function sendReply(){
