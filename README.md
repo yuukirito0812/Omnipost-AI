@@ -28,7 +28,7 @@ Open `http://localhost:3000`. Without Supabase configuration the UI shows a clea
 
 ## Community management data
 
-The `supabase/migrations/20261115212411_omnipost_community_management_center.sql` migration creates the private contact and interaction-history tables. It is applied to the existing EstateFlow Supabase project used by OmniPost. Both tables have explicit authenticated-role grants and user-scoped Row Level Security. Social interactions are read from the connected Upload-Post profile; refreshing the inbox fetches recent comments from the latest three posts per supported channel, recent DM conversations where enabled, and the selected Google Business location's reviews. Platform permissions and provider plan limits still apply.
+The `supabase/migrations/20261115212411_omnipost_community_management_center.sql` migration creates the private contact and interaction-history tables, and `supabase/migrations/20261115214134_omnipost_community_contact_fk_index.sql` adds the contact-history foreign-key index. Both are applied to the existing EstateFlow Supabase project used by OmniPost. Both tables have explicit authenticated-role grants and user-scoped Row Level Security. Social interactions are read from the connected Upload-Post profile; refreshing the inbox fetches recent comments from the latest three posts per supported channel, recent DM conversations where enabled, and the selected Google Business location's reviews. Platform permissions and provider plan limits still apply.
 
 ## What AI can and cannot do
 
