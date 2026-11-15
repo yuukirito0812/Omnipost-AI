@@ -78,7 +78,6 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
  const count=connected.filter(a=>!a.reauthRequired).length;
  const planName=String(data.plan||'').toLowerCase();const isFree=planName==='default'||planName==='free'||planName.includes('free');
  const chosenPage=active?.facebookPages?.find(p=>p.id===selectedFacebookPageId)||active?.facebookPages?.[0];
- const chosenLinkedinPage=active?.linkedinPages?.find(p=>p.id===selectedLinkedinPageId);
  const chosenPinterestBoard=active?.pinterestBoards?.find(p=>p.id===selectedPinterestBoardId)||active?.pinterestBoards?.[0];
  const chosenGoogleLocation=active?.googleBusinessLocations?.find(p=>p.id===selectedGoogleBusinessLocationId)||active?.googleBusinessLocations?.[0];
  return <section className="omni-login-hub" id="omni-login-hub">
