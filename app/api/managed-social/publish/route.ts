@@ -39,6 +39,29 @@ export async function POST(req:Request){
   const invalid=selected.filter(p=>{const a=connected.social_accounts?.[p];return !a||typeof a!=='object'||a.reauth_required===true});
   if(invalid.length)return failure(400,'These networks are not connected or need reauthorization: '+invalid.join(', ')+'. Connect them in Upload-Post and refresh.');
   let facebookPageId='';
+  let linkedinPageId='',pinterestBoardId='',googleBusinessLocationId='';
+  if(selected.includes('linkedin')){
+   linkedinPageId=String(payload.linkedinPageId||'');
+   if(linkedinPageId){
+    const r=await fetch(origin+'/api/uploadposts/linkedin/pages?profile='+encodeURIComponent(profile),{headers,cache:'no-store',signal:AbortSignal.timeout(12000)});
+    const j:any=await r.json().catch(()=>({})),pages=r.ok&&Array.isArray(j.pages)?j.pages:[];
+    if(!pages.some((p:any)=>String(p.id)===linkedinPageId))return failure(400,'The selected LinkedIn organization Page is not available to this profile. Refresh Social Accounts and choose again.');
+   }
+  }
+  if(selected.includes('pinterest')){
+   const r=await fetch(origin+'/api/uploadposts/pinterest/boards?profile='+encodeURIComponent(profile),{headers,cache:'no-store',signal:AbortSignal.timeout(12000)});
+   const j:any=await r.json().catch(()=>({})),boards=r.ok&&Array.isArray(j.boards)?j.boards.filter((b:any)=>b.id&&!b.is_secret&&String(b.privacy||'').toUpperCase()!=='SECRET'):[];
+   pinterestBoardId=String(payload.pinterestBoardId||'');
+   if(!pinterestBoardId&&boards.length===1)pinterestBoardId=String(boards[0].id);
+   if(!pinterestBoardId||!boards.some((b:any)=>String(b.id)===pinterestBoardId))return failure(400,boards.length?'Choose a public Pinterest board before publishing.':'No public Pinterest boards were found. Create one, then refresh your social accounts.');
+  }
+  if(selected.includes('google_business')){
+   const r=await fetch(origin+'/api/uploadposts/google-business/locations?profile='+encodeURIComponent(profile),{headers,cache:'no-store',signal:AbortSignal.timeout(12000)});
+   const j:any=await r.json().catch(()=>({})),locations=r.ok&&Array.isArray(j.locations)?j.locations.filter((l:any)=>l.name):[];
+   googleBusinessLocationId=String(payload.googleBusinessLocationId||'');
+   if(!googleBusinessLocationId&&locations.length===1)googleBusinessLocationId=String(locations[0].name);
+   if(!googleBusinessLocationId||!locations.some((l:any)=>String(l.name)===googleBusinessLocationId))return failure(400,locations.length?'Choose a Google Business location before publishing.':'No Google Business locations were found. Check the connected account and verify its Business Profile.');
+  }
   if(selected.includes('facebook')){
    const pagesResponse=await fetch(origin+'/api/uploadposts/facebook/pages?profile='+encodeURIComponent(profile),{headers,cache:'no-store',signal:AbortSignal.timeout(12000)});
    const pageData:any=await pagesResponse.json().catch(()=>({}));
@@ -66,6 +89,9 @@ export async function POST(req:Request){
   const caption=[post.caption.trim(),post.cta.trim(),post.tags.trim()].filter(Boolean).join('\n\n')||post.title.trim();
   form.set('title',post.mediaType==='video'&&selected.includes('youtube')?(post.title.trim()||caption.slice(0,95)):caption);
   if(facebookPageId)form.set('facebook_page_id',facebookPageId);
+  if(linkedinPageId)form.set('target_linkedin_page_id',linkedinPageId);
+  if(pinterestBoardId)form.set('pinterest_board_id',pinterestBoardId);
+  if(googleBusinessLocationId)form.set('gbp_location_id',googleBusinessLocationId);
   if(post.mediaType==='video')form.set('description',caption);
   if(post.firstComment?.trim())form.set('first_comment',post.firstComment.slice(0,900));
   if(mode==='schedule')form.set('scheduled_date',new Date(post.scheduledAt).toISOString());
