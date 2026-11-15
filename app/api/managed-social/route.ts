@@ -3,7 +3,7 @@ export const runtime='nodejs';
 
 type Profile={username:string;accounts:{platform:string;name:string;handle:string;externalId:string;avatar:string;reauthRequired:boolean}[];facebookPages:{id:string;name:string}[];facebookWarning?:string};
 const ROOT='https://api.upload-post.com';
-const platforms=new Set(['facebook','instagram','tiktok','youtube','x']);
+const platforms=new Set(['facebook','instagram','tiktok','youtube','x','linkedin','threads','pinterest','google_business']);
 async function getRemoteProfiles(key:string):Promise<{plan:string;limit:number|null;profiles:Profile[]}>{
  const r=await fetch(ROOT+'/api/uploadposts/users',{headers:{Authorization:'Apikey '+key,Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(16000)});
  let data:any={};try{data=await r.json()}catch{}
