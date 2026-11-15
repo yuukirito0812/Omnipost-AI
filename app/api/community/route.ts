@@ -3,7 +3,8 @@ export const runtime='nodejs';
 export const maxDuration=60;
 const ROOT='https://api.upload-post.com';
 const COMMENT_PLATFORMS=['instagram','facebook','youtube','linkedin','tiktok','x','threads','bluesky'];
-const DM_PLATFORMS=['instagram','bluesky'];
+const DM_PLATFORMS=['instagram','bluesky','facebook','whatsapp'];
+const DM_SEND_PLATFORMS=['instagram','bluesky'];
 const clip=(v:unknown,n=500)=>String(v??'').trim().slice(0,n);
 const iso=(v:unknown)=>{const d=v?new Date(String(v)):new Date();return Number.isFinite(d.getTime())?d.toISOString():new Date().toISOString()};
 const safeUrl=(v:unknown)=>{const s=clip(v,900);return /^https:\/\//i.test(s)?s:''};
@@ -150,7 +151,7 @@ export async function POST(req:Request){
    source_type='comment_reply';metadata={parentCommentId:event.external_id,postId:event.metadata?.postId||null,postUrl:event.metadata?.postUrl||null,visibility};
   }else if(action==='send_dm'){
    if(event.source_type!=='dm')throw Error('Select a direct-message conversation.');
-   if(!DM_PLATFORMS.includes(platform))throw Error('Sending DMs is currently supported for Instagram and Bluesky only.');
+   if(!DM_SEND_PLATFORMS.includes(platform))throw Error('Sending DMs is currently supported for Instagram and Bluesky only.');
    const recipient=clip(event.metadata?.recipientId||contact.external_contact_id,300);
    response=await provider(key,'/api/uploadposts/dms/send','POST',{platform,user:profile,recipient_id:recipient,message});
    source_type='dm_reply';metadata={conversationId:event.metadata?.conversationId||null,recipientId:recipient};
