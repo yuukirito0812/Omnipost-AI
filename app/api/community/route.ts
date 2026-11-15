@@ -152,8 +152,9 @@ export async function POST(req:Request){
   }else if(action==='send_dm'){
    if(event.source_type!=='dm')throw Error('Select a direct-message conversation.');
    if(!DM_SEND_PLATFORMS.includes(platform))throw Error('Sending DMs is currently supported for Instagram and Bluesky only.');
-   const recipient=clip(event.metadata?.recipientId||contact.external_contact_id,300);
-   response=await provider(key,'/api/uploadposts/dms/send','POST',{platform,user:profile,recipient_id:recipient,message});
+   const recipient=clip(event.metadata?.recipientId||contact.external_contact_id,300),conversationId=clip(event.metadata?.conversationId,250);
+   const dmPayload=platform==='bluesky'&&conversationId&&recipient===conversationId?{platform,user:profile,conversation_id:conversationId,message}:{platform,user:profile,recipient_id:recipient,message};
+   response=await provider(key,'/api/uploadposts/dms/send','POST',dmPayload);
    source_type='dm_reply';metadata={conversationId:event.metadata?.conversationId||null,recipientId:recipient};
   }else if(action==='reply_review'){
    if(event.source_type!=='review')throw Error('Select a Google Business review first.');
