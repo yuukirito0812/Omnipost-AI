@@ -632,3 +632,10 @@ html[data-studio-theme="dusk"] .community-readonly{background:#3b3124;color:#e8c
 @media(max-width:1100px){.community-layout{grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr)}}
 @media(max-width:850px){.community-layout{grid-template-columns:1fr}.community-list{max-height:430px}.community-detail-panel{min-height:300px}}
 @media(max-width:600px){.community-header{align-items:flex-start;flex-direction:column}.community-header-actions{width:100%}.community-header-actions button{flex:1;justify-content:center}.community-toolbar{align-items:stretch}.community-toolbar label{width:100%}.community-connected{margin-left:0}.community-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.community-search{flex-wrap:wrap}.community-search input{min-width:120px}.community-search select{max-width:none}.community-contact-fields{grid-template-columns:1fr}.community-reply-heading{flex-direction:column}.community-ai-controls{align-items:stretch}.community-ai-controls label{justify-content:space-between}.community-ai-controls label select{flex:1;max-width:none}.community-ai-controls .outline-btn{justify-content:center}.community-detail-head{align-items:flex-start}.community-inbox-item{padding:11px}.community-contact-management{padding:12px}}
+
+.community-detail-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.community-attachments{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.community-attachments a{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--studio-line);border-radius:8px;background:var(--studio-surface);color:var(--studio-accent);font-size:9px;text-decoration:none}
+.community-attachments a span{padding:2px 5px;border-radius:4px;background:var(--studio-accent-soft);font-weight:750}
+.community-attachments a:hover{border-color:var(--studio-accent);text-decoration:none}
+@media(max-width:540px){.community-detail-head-actions{width:100%;justify-content:space-between}.community-attachments a{max-width:100%;overflow-wrap:anywhere}}
