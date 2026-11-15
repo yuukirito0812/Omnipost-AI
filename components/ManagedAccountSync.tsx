@@ -61,7 +61,7 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
  }
  async function login(platform:SocialID){
   if(starting||!data.configured)return;
-  if(platform==='tiktok'&&isFree){setError('TikTok is not included with the Upload-Post free plan. Other networks can connect without an upgrade.');return;}
+  if((platform==='tiktok'||platform==='google_business')&&isFree){setError((platform==='tiktok'?'TikTok':'Google Business Profile')+' is not included with the Upload-Post free plan. Other available networks can connect without an upgrade.');return;}
   setStarting(platform);setError('');setMessage('');
   try{
    const result=await request('POST',{profile:active?.username||profile,platform},'/api/managed-social/connect');
@@ -107,7 +107,7 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
      {NETWORKS.map(n=>{
        const acc=connected.find(a=>a.platform===n.id);
        const linked=!!acc&&!acc.reauthRequired;
-       const cannotUse=n.id==='tiktok'&&isFree;
+       const cannotUse=(n.id==='tiktok'||n.id==='google_business')&&isFree;
        return <div className={'omni-login-network '+n.accent+(linked?' linked':'')} key={n.id}>
         <div className="omni-login-network-symbol"><PlatformIcon platform={n.id} size={31}/></div>
         <div className="omni-login-network-copy"><strong>{n.name}</strong>
@@ -129,7 +129,7 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
    {active?.facebookWarning&&<div className="omni-login-explain"><Info size={16}/><span>Facebook is signed in. Publishing to Facebook still requires selecting a Page you manage; personal timeline posting isn't available through this API. <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener noreferrer">Create a Page</a>.</span></div>}
    {error&&<div className="omni-login-error" role="alert">{error}</div>}
    {message&&<div className="omni-login-message" role="status">{message}</div>}
-   <div className="omni-login-bottom"><span><ShieldCheck size={16}/> Official platform sign-in. OmniPost never asks for your social password.</span><span>{isFree?'Upload-Post Free: 2 client profiles and 10 uploads/month. TikTok is not included.':'Provider plan: '+(data.plan||'connected')} · <a href="https://app.upload-post.com/" target="_blank" rel="noreferrer">Manage profiles <ExternalLink size={12}/></a> · <a href="https://www.upload-post.com/pricing/" target="_blank" rel="noreferrer">Plan details <ExternalLink size={12}/></a></span></div>
+   <div className="omni-login-bottom"><span><ShieldCheck size={16}/> Official platform sign-in. OmniPost never asks for your social password.</span><span>{isFree?'Upload-Post Free: 2 client profiles, 10 uploads/month. TikTok and Google Business are not included.':'Provider plan: '+(data.plan||'connected')} · <a href="https://app.upload-post.com/" target="_blank" rel="noreferrer">Manage profiles <ExternalLink size={12}/></a> · <a href="https://www.upload-post.com/pricing/" target="_blank" rel="noreferrer">Plan details <ExternalLink size={12}/></a></span></div>
    {data.configured&&<button className="omni-provider-settings" onClick={()=>setShowAdvanced(v=>!v)} aria-expanded={showAdvanced}><ChevronDown size={14}/> Provider connection settings</button>}
    {showAdvanced&&data.configured&&<div className="omni-provider-settings-panel"><p>These controls unlink only OmniPost's provider integration, not the social accounts themselves. You can manage individual permissions on each social network.</p><button className="outline-btn sm" disabled={busy} onClick={disconnect}><Unplug size={15}/> Disconnect provider</button></div>}
   </section>
