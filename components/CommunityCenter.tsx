@@ -13,7 +13,7 @@ const localDate=(v:string|null)=>{if(!v)return '';const d=new Date(v);if(!Number
 function platformClass(p:string){return 'community-platform community-platform-'+p.replace(/[^a-z0-9]/gi,'-')}
 export default function CommunityCenter({token,profile,profiles,onProfileChange,locationId,onLocationChange,linkedinPageId,aiReady,brand,onConnect,onAISettings}:Props){
  const activeProfile=profile||profiles[0]?.username||'',currentProfile=profiles.find(p=>p.username===activeProfile),locations=currentProfile?.googleBusinessLocations||[];
- const selectedLocation=locationId||locations[0]?.id||'';
+ const selectedLocation=locations.some(l=>l.id===locationId)?locationId:locations[0]?.id||'';
  const [contacts,setContacts]=useState<Contact[]>([]),[events,setEvents]=useState<Event[]>([]),[warnings,setWarnings]=useState<string[]>([]),[connected,setConnected]=useState<string[]>([]);
  const [loading,setLoading]=useState(false),[refreshKey,setRefreshKey]=useState(0),[error,setError]=useState('');
  const [category,setCategory]=useState<'all'|'comment'|'dm'|'review'>('all'),[statusFilter,setStatusFilter]=useState('all'),[search,setSearch]=useState('');
