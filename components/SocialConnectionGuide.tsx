@@ -13,7 +13,7 @@ type Props={selected:Platform|null;setSelected:(p:Platform|null)=>void;ready:Rec
 export default function SocialConnectionGuide({selected,setSelected,ready,serverReady,onCheck,onConnect}:Props){
  const [copied,setCopied]=useState(false);
  if(!selected)return null;
- const p=platforms[selected],callback='https://omnipost-ai-theta.vercel.app/api/oauth/callback/'+selected;
+ const p=platforms[selected];if(!p)return null;const callback='https://omnipost-ai-theta.vercel.app/api/oauth/callback/'+selected;
  const readyForLogin=!!ready[selected]&&serverReady;
  const copy=async()=>{try{await navigator.clipboard.writeText(callback);setCopied(true)}catch{setCopied(false)}};
  return <section className="panel omni-social-guide" id="omni-social-guide" aria-label={'Set up '+p.name}>
