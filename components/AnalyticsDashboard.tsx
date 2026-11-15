@@ -4,7 +4,7 @@ import {Activity,AlertCircle,ArrowRight,ArrowUpRight,BarChart3,CalendarClock,Che
 import PlatformIcon from './PlatformIcon';
 import type {Platform} from '../lib/types';
 type Period='last_day'|'last_week'|'last_month'|'last_3months'|'last_year';
-type Snapshot={profile:string;period?:Period;platforms:Record<string,any>;totalImpressions:number|null;totalPerPlatform:Record<string,number>;totalPerDay:Record<string,number>;omitted:string[];refreshedAt:string};
+type Snapshot={profile:string;period?:Period;platforms:Record<string,any>;totalImpressions:number|null;totalPerPlatform:Record<string,number>;totalPerDay:any;omitted:string[];refreshedAt:string};
 type Analysis={summary:string;wins:string[];opportunities:string[];nextActions:string[];platformNotes:{platform:string;observation:string;recommendation:string}[]};
 const LABELS:Record<string,string>={instagram:'Instagram',facebook:'Facebook',tiktok:'TikTok',youtube:'YouTube',x:'X',linkedin:'LinkedIn',threads:'Threads',pinterest:'Pinterest'};
 const METRIC_LABELS:Record<string,string>={
@@ -57,6 +57,12 @@ export default function AnalyticsDashboard({token,profile,facebookPageId,linkedi
  const channels=useMemo(()=>Object.entries(snapshot?.platforms||{}).filter(([,v])=>v&&typeof v==='object'),[snapshot]);
  const metricCount=channels.reduce((n,[,v])=>n+extractMetrics(v).length,0);
  const totalImpressions=safeNumber(snapshot?.totalImpressions);
+ const dailySeries=useMemo<[string,number][]>(()=>{
+  const raw=snapshot?.totalPerDay;if(!raw)return [];
+  const entries:Array<[string,number|null]>=Array.isArray(raw)?raw.map((v:any)=>[String(v.date||v.day||v.timestamp||''),safeNumber(v.impressions??v.total_impressions??v.value)]):Object.entries(raw).map(([day,value]:[string,any])=>[day,safeNumber(value&&typeof value==='object'?value.impressions??value.total_impressions??value.value:value)]);
+  return entries.filter((v):v is [string,number]=>!!v[0]&&v[1]!==null).sort((a,b)=>a[0].localeCompare(b[0])).slice(-14);
+ },[snapshot]);
+ const dailyMax=Math.max(1,...dailySeries.map(v=>v[1]));
  const topMetrics=useMemo(()=>channels.flatMap(([platform,value])=>extractMetrics(value).map(m=>({...m,platform}))),[channels]);
  async function runAnalysis(){
   if(!token||!snapshot||!aiReady)return;
@@ -83,6 +89,7 @@ export default function AnalyticsDashboard({token,profile,facebookPageId,linkedi
     <article><span className="analytics-kpi-icon green"><Eye size={18}/></span><small>Impressions · {periodLabel[period]}</small><strong>{totalImpressions===null?'—':formatMetric('impressions',totalImpressions)}</strong><span>{totalImpressions===null?'Not supplied by this provider response':{'Provider-reported total for '+periodLabel[period].toLowerCase()}}</span></article>
     <article><span className="analytics-kpi-icon amber"><Clock3 size={18}/></span><small>Data freshness</small><strong>{refreshed?new Date(snapshot.refreshedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—'}</strong><span>{refreshed||'No refresh timestamp'}</span></article>
    </div>
+   <section className="panel analytics-trend-panel"><div className="analytics-trend-heading"><div><h3>Daily impressions</h3><p>{periodLabel[period]} · Provider daily snapshots</p></div><span>{dailySeries.length?dailySeries.length+' days':'No daily data'}</span></div>{dailySeries.length?<div className="analytics-trend-chart" role="img" aria-label="Daily impressions trend"><div className="analytics-trend-bars">{dailySeries.map(([day,value])=><div className="analytics-trend-column" key={day} title={day+': '+formatMetric('impressions',value)}><div className="analytics-trend-bar-track"><span style={{height:Math.max(3,value/dailyMax*100)+'%'}}/></div><small>{day.length>=10?day.slice(5):day}</small></div>)}</div></div>:<div className="analytics-trend-empty">The provider did not return a daily breakdown for this profile and period. The totals above are shown only when supplied by the connected platform.</div>}</section>
    <div className="analytics-content-grid">
     <section className="panel analytics-platform-panel"><div className="panel-head"><div><h3>Performance by platform</h3><p>Metrics returned by the connected social accounts</p></div><span className="analytics-provider-badge"><CheckCircle2 size={13}/> Live data</span></div>
      {channels.length?<div className="analytics-platform-list">{channels.map(([platform,value])=>{const metrics=extractMetrics(value);return <article className="analytics-platform-card" key={platform}><div className="analytics-platform-heading"><span className="analytics-platform-brand"><PlatformIcon platform={platform as Platform} size={24}/></span><div><strong>{LABELS[platform]||pretty(platform)}</strong><small>{metrics.length?'Insights available':'Connected · no metric values returned'}</small></div><span className="analytics-platform-state">{metrics.length?'Reporting':'No data'}</span></div>{metrics.length?<div className="analytics-metric-grid">{metrics.slice(0,4).map(m=><div key={m.key}><small>{m.label}</small><strong>{formatMetric(m.key,m.value)}</strong></div>)}</div>:<p className="analytics-no-metrics">This channel did not return standard numeric insights. Check its account permissions or platform analytics availability.</p>}</article>})}</div>:<div className="analytics-no-data"><BarChart3 size={25}/><strong>No channel metrics returned</strong><p>The profile is connected, but no supported analytics were returned for the selected destinations.</p></div>}
