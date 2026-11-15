@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=path=>fs.readFileSync(path,'utf8');
 const loginHub=read('components/ManagedAccountSync.tsx'),loginApi=read('app/api/managed-social/connect/route.ts'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
 const publish=read('app/api/managed-social/publish/route.ts'),postApi=read('app/api/posts/route.ts'),statusApi=read('app/api/managed-social/status/route.ts');
-const studio=read('app/studio.css'),commands=read('components/CommandPalette.tsx'),aiStudio=read('components/AIStudioPanel.tsx'),aiRoute=read('app/api/ai/route.ts'),platformIcon=read('components/PlatformIcon.tsx'),types=read('lib/types.ts'),managedRoute=read('app/api/managed-social/route.ts'),analytics=read('components/AnalyticsDashboard.tsx'),analyticsApi=read('app/api/managed-social/analytics/route.ts');
+const studio=read('app/studio.css'),commands=read('components/CommandPalette.tsx'),aiStudio=read('components/AIStudioPanel.tsx'),aiRoute=read('app/api/ai/route.ts'),platformIcon=read('components/PlatformIcon.tsx'),types=read('lib/types.ts'),managedRoute=read('app/api/managed-social/route.ts'),analytics=read('components/AnalyticsDashboard.tsx'),analyticsApi=read('app/api/managed-social/analytics/route.ts'),community=read('components/CommunityCenter.tsx'),communityApi=read('app/api/community/route.ts'),communityMigration=read('supabase/migrations/20261115211500_omnipost_community_management_center.sql');
 const critical=[
  ['account menu',page.includes('omni-profile-trigger')&&page.includes('onClick={()=>{setProfileOpen(v=>!v)')],
  ['workspace menu',page.includes('omni-workspace-trigger')&&page.includes('setWorkspaceOpen(v=>!v)')],
@@ -74,9 +74,17 @@ const critical=[
  ['analytics does not invent missing metrics',analytics.includes("Not supplied by this provider response")&&analytics.includes("never estimated")],
  ['AI performance coach uses real analytics payload',analytics.includes("mode:'performance'")&&analytics.includes('snapshot.platforms')&&aiRoute.includes("mode==='performance'")],
  ['analytics refresh and account destinations',analytics.includes('setRefreshKey(v=>v+1)')&&analytics.includes('Impression reporting period')&&analyticsApi.includes('last_3months')&&page.includes('facebookPageId={facebookPageId}')&&page.includes('linkedinPageId={linkedinPageId}')],
+ ['community inbox is in the workspace navigation',page.includes("view:'community'")&&page.includes("view==='community'")&&page.includes('<CommunityCenter')],
+ ['community inbox uses authenticated Upload-Post profiles',communityApi.includes('verifyUser(req)')&&communityApi.includes('omnipost_managed_social_settings')&&communityApi.includes('/api/uploadposts/users')],
+ ['community inbox imports comments and direct messages',communityApi.includes('/api/uploadposts/comments?')&&communityApi.includes('/api/uploadposts/dms/conversations?')],
+ ['Google Business reviews can be read and answered',communityApi.includes('/api/uploadposts/google-business/reviews?')&&communityApi.includes('/api/uploadposts/google-business/reviews/reply')&&communityApi.includes("'PUT'")],
+ ['AI community replies require a reviewable draft',aiRoute.includes("mode==='community_reply'")&&community.includes('Draft with AI')&&community.includes('Approval required')],
+ ['customer tracking stores statuses notes tags and follow-ups',communityApi.includes('omnipost_community_contacts')&&community.includes('Follow-up date')&&community.includes('Internal notes')&&community.includes('Priority')],
+ ['community interaction history has user-scoped RLS',communityMigration.includes('enable row level security')&&communityMigration.includes('(select auth.uid()) = user_id')&&communityMigration.includes('grant select, insert, update, delete on public.omnipost_community_contacts')],
+
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
-const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g),...ai.matchAll(/<button\b([^>]*)>/g),...aiStudio.matchAll(/<button\b([^>]*)>/g),...loginHub.matchAll(/<button\b([^>]*)>/g)];
+const controls=[...page.matchAll(/<button\b([^>]*)>/g),...social.matchAll(/<button\b([^>]*)>/g),...commands.matchAll(/<button\b([^>]*)>/g),...ai.matchAll(/<button\b([^>]*)>/g),...aiStudio.matchAll(/<button\b([^>]*)>/g),...loginHub.matchAll(/<button\b([^>]*)>/g),...community.matchAll(/<button\b([^>]*)>/g)];
 const inert=controls.filter(m=>!m[1].includes('onClick')&&!m[1].includes('type="submit"'));
 assert.equal(inert.length,0,'Buttons without action or submit semantics: '+inert.map(x=>x[0].slice(0,100)).join('; '));
 console.log('PASS: '+critical.length+' feature contracts; '+controls.length+' button tags checked for click or form handlers.');
