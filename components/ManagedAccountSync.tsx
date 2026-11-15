@@ -67,7 +67,7 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
    const result=await request('POST',{profile:active?.username||profile,platform},'/api/managed-social/connect');
    if(!result.url)throw Error('Provider did not return a sign-in destination.');
    let trusted=false;
-   try{const target=new URL(result.url);const hosts=['app.upload-post.com','facebook.com','instagram.com','google.com','youtube.com','x.com','twitter.com','tiktok.com','tiktokapis.com'];trusted=target.protocol==='https:'&&hosts.some(host=>target.hostname===host||target.hostname.endsWith('.'+host));}catch{}
+   try{const target=new URL(result.url);const hosts=['app.upload-post.com','facebook.com','instagram.com','google.com','youtube.com','x.com','twitter.com','tiktok.com','tiktokapis.com','linkedin.com','threads.net','threads.com','pinterest.com'];trusted=target.protocol==='https:'&&hosts.some(host=>target.hostname===host||target.hostname.endsWith('.'+host));}catch{}
    if(!trusted)throw Error('Provider did not return a trusted social login URL.');
    if(result.method==='dashboard')setMessage(result.notice||'Opening the Upload-Post dashboard to connect your network.');
    window.location.assign(result.url);
