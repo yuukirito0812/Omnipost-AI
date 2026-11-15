@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 export const runtime='nodejs';
 export const maxDuration=60;
 const origin='https://api.upload-post.com';
-const recognized=new Set(['facebook','instagram','tiktok','youtube','x']);
+const recognized=new Set(['facebook','instagram','tiktok','youtube','x','linkedin','threads','pinterest','google_business']);
 type SocialProfile={username:string;social_accounts:Record<string,any>};
 
 function validMedia(userId:string,mediaUrl:string){
