@@ -2,7 +2,7 @@
 import {useState} from 'react';
 import {Copy,ExternalLink,CheckCircle2,LockKeyhole,Link2,RefreshCw,ShieldCheck,Info,ArrowUpRight} from 'lucide-react';
 import type {Platform} from '../lib/types';
-const platforms:Record<Platform,{name:string;portal:string;ids:[string,string];advice:string;scope:string}>={
+const platforms:Partial<Record<Platform,{name:string;portal:string;ids:[string,string];advice:string;scope:string}>>={
 facebook:{name:'Facebook Pages',portal:'https://developers.facebook.com/apps/',ids:['FACEBOOK_CLIENT_ID','FACEBOOK_CLIENT_SECRET'],advice:'Create a Meta app with Facebook Login and Pages access. You must manage the Page you connect.',scope:'pages_show_list, pages_manage_posts, pages_read_engagement'},
 instagram:{name:'Instagram Professional',portal:'https://developers.facebook.com/apps/',ids:['INSTAGRAM_CLIENT_ID','INSTAGRAM_CLIENT_SECRET'],advice:'Create a Meta app with Instagram API with Instagram Login. Only Professional accounts (Business/Creator) can publish.',scope:'instagram_business_basic, instagram_business_content_publish'},
 tiktok:{name:'TikTok',portal:'https://developers.tiktok.com/apps/',ids:['TIKTOK_CLIENT_ID','TIKTOK_CLIENT_SECRET'],advice:'Register TikTok Login Kit and Content Posting API. Direct posting requires approval; unaudited apps may only post privately.',scope:'user.info.basic, video.publish'},
