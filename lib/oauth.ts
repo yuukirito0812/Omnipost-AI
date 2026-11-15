@@ -1,7 +1,7 @@
 import {appUrl,fetchJson} from './server';
 import {randomBytes,createHash} from 'node:crypto';
 import type {Platform} from './types';
-const K:Record<Platform,[string,string]>={facebook:['FACEBOOK_CLIENT_ID','FACEBOOK_CLIENT_SECRET'],instagram:['INSTAGRAM_CLIENT_ID','INSTAGRAM_CLIENT_SECRET'],youtube:['YOUTUBE_CLIENT_ID','YOUTUBE_CLIENT_SECRET'],tiktok:['TIKTOK_CLIENT_ID','TIKTOK_CLIENT_SECRET'],x:['X_CLIENT_ID','X_CLIENT_SECRET']};
+const K:Partial<Record<Platform,[string,string]>>={facebook:['FACEBOOK_CLIENT_ID','FACEBOOK_CLIENT_SECRET'],instagram:['INSTAGRAM_CLIENT_ID','INSTAGRAM_CLIENT_SECRET'],youtube:['YOUTUBE_CLIENT_ID','YOUTUBE_CLIENT_SECRET'],tiktok:['TIKTOK_CLIENT_ID','TIKTOK_CLIENT_SECRET'],x:['X_CLIENT_ID','X_CLIENT_SECRET']};
 export function credentials(p:Platform){const k=K[p];if(!k)throw Error('Unknown network');const id=process.env[k[0]],secret=process.env[k[1]];if(!id||!secret)throw Error(`Set ${k[0]} and ${k[1]} in your environment`);return {id,secret};}
 export const callbackUrl=(p:Platform)=>`${appUrl()}/api/oauth/callback/${p}`;
 const b64=(s:Buffer)=>s.toString('base64url');
