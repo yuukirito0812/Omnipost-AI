@@ -80,7 +80,7 @@ export default function AnalyticsDashboard({token,profile,facebookPageId,linkedi
    <div className="analytics-kpis">
     <article><span className="analytics-kpi-icon violet"><Activity size={18}/></span><small>Channels reporting</small><strong>{channels.length}</strong><span>Connected channels with returned insights</span></article>
     <article><span className="analytics-kpi-icon blue"><Target size={18}/></span><small>Metrics returned</small><strong>{metricCount}</strong><span>Numeric measures from the provider</span></article>
-    <article><span className="analytics-kpi-icon green"><Eye size={18}/></span><small>Total impressions</small><strong>{totalImpressions===null?'—':formatMetric('impressions',totalImpressions)}</strong><span>{totalImpressions===null?'Not supplied by this provider response':'Provider-reported total'}</span></article>
+    <article><span className="analytics-kpi-icon green"><Eye size={18}/></span><small>Impressions · {periodLabel[period]}</small><strong>{totalImpressions===null?'—':formatMetric('impressions',totalImpressions)}</strong><span>{totalImpressions===null?'Not supplied by this provider response':{'Provider-reported total for '+periodLabel[period].toLowerCase()}}</span></article>
     <article><span className="analytics-kpi-icon amber"><Clock3 size={18}/></span><small>Data freshness</small><strong>{refreshed?new Date(snapshot.refreshedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—'}</strong><span>{refreshed||'No refresh timestamp'}</span></article>
    </div>
    <div className="analytics-content-grid">
