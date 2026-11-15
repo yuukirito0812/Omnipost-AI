@@ -81,6 +81,10 @@ const critical=[
  ['AI community replies require a reviewable draft',aiRoute.includes("mode==='community_reply'")&&community.includes('Draft with AI')&&community.includes('Approval required')],
  ['customer tracking stores statuses notes tags and follow-ups',communityApi.includes('omnipost_community_contacts')&&community.includes('Follow-up date')&&community.includes('Internal notes')&&community.includes('Priority')],
  ['community interaction history has user-scoped RLS',communityMigration.includes('enable row level security')&&communityMigration.includes('(select auth.uid()) = user_id')&&communityMigration.includes('grant select, insert, update, delete on public.omnipost_community_contacts')],
+ ['community unread state can be cleared by marking a conversation read',community.includes("contacts.filter(c=>c.status==='new')")&&community.includes("markAsRead(selectedContact)")&&community.includes("status:'open'")],
+ ['community messages render sanitized provider attachments',communityApi.includes('previewUrl:safeUrl')&&communityApi.includes('filter((a:any)=>a.url||a.previewUrl)')&&community.includes('community-attachments')&&community.includes('attachment.url||attachment.previewUrl')],
+ ['community replies remain human-approved',community.includes('Approval required')&&community.includes('Draft with AI')&&community.includes('Send reply')],
+
 
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
