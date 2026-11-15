@@ -35,7 +35,7 @@ export async function POST(req:Request){
   if(!topic&&!caption)throw Error(mode==='audit'||mode==='replies'?'Paste the post or comment first.':'Add a topic or campaign brief first.');
   const context=`Brand: ${brand}. Audience: ${audience}. Goal: ${goal}. Tone: ${tone}. Platforms: ${platforms.join(', ')}.
 Platform requirements:
-${platforms.map(p=>'- '+platforms[p]).join('\n')}
+${platforms.map(p=>'- '+platformGuidance[p]).join('\n')}
 Never fabricate facts, prices, locations, reviews, results, testimonials, statistics, deadlines, availability, or trending status. Use clear placeholders when facts are missing. Avoid cringe, filler, clickbait, generic AI phrases and excessive emojis. Make copy sound like a capable human SMM wrote it.`;
   const specs:Record<Mode,string>={
    post:`Create one ready-to-edit social post. Return strict JSON with title, caption, tags (hashtags), cta, firstComment, altText, and overrides (object with one platform-specific caption for every selected platform). Keep the master caption useful and make every override native to its channel. Do not repeat the same generic copy across all platforms.`,
