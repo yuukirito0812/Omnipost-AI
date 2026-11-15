@@ -3,8 +3,8 @@ import {generateMarketingText,parseAIJson} from '../../../lib/ai-gateway';
 import {PLATFORMS,type Platform} from '../../../lib/types';
 export const runtime='nodejs';
 export const maxDuration=45;
-type Mode='post'|'hooks'|'hashtags'|'calendar'|'repurpose'|'audit'|'ideas'|'replies';
-const MODES=new Set<Mode>(['post','hooks','hashtags','calendar','repurpose','audit','ideas','replies']);
+type Mode='post'|'hooks'|'hashtags'|'calendar'|'repurpose'|'audit'|'ideas'|'replies'|'performance';
+const MODES=new Set<Mode>(['post','hooks','hashtags','calendar','repurpose','audit','ideas','replies','performance']);
 const clip=(v:unknown,n=1800)=>String(v??'').trim().slice(0,n);
 const cleanPlatforms=(value:unknown):Platform[]=>{
  const values=Array.isArray(value)?value.filter((v):v is Platform=>typeof v==='string'&&PLATFORMS.includes(v as Platform)):[];
@@ -46,6 +46,7 @@ Never fabricate facts, prices, locations, reviews, results, testimonials, statis
    audit:`Audit the supplied caption as a practical SMM editor. Assess clarity, opening hook, audience fit, readability, CTA and platform fit. Return strict JSON {score:number (0-100),strengths:string[],improvements:string[],rewrite:string,reason:string}. Be honest; do not invent performance metrics.`,
    ideas:`Generate 10 distinct content ideas for the brand and audience. Include a mix of educational, community, proof/process (without fabricated testimonials), promotional and conversation-led ideas. Return strict JSON {ideas:[{title,angle,format,goal,hook}]}.`,
    replies:`Write 6 natural comment/DM reply options for the supplied message. Include friendly, concise, helpful and boundary-setting variations as appropriate. Do not promise a price, refund, availability or action not supplied. Return strict JSON {replies:string[]}.`
+   ,performance:`Analyze the supplied real social analytics. Return strict JSON {summary:string,wins:string[],opportunities:string[],nextActions:string[],platformNotes:[{platform,observation,recommendation}]}. Separate measured facts from hypotheses. Compare platforms only where metrics are comparable. Do not invent missing numbers, targets, causes, or benchmarks. Give 3 prioritized actions that can be tested next week.`
   };
   const instructions='You are Omni, a senior social media strategist and channel editor. Produce accurate, useful and publishable work. Follow the requested JSON schema exactly. '+context;
   const prompt=`TASK: ${specs[mode]}\nBRIEF / TOPIC: ${topic||'(use source below)'}\nSOURCE CAPTION / MESSAGE: ${caption||'(none)'}\n${context}`;
@@ -66,6 +67,7 @@ Never fabricate facts, prices, locations, reviews, results, testimonials, statis
    if(calendarPlan.length<3)throw Error('AI returned too few complete content ideas. Try again.');
    return Response.json({mode,calendarPlan,reply:clip(result.reply||'Your 7-day content plan is ready.',500)});
   }
+  if(mode==='performance')return Response.json({mode,summary:clip(result.summary,900),wins:Array.isArray(result.wins)?result.wins.slice(0,5).map((v:any)=>clip(v,260)):[],opportunities:Array.isArray(result.opportunities)?result.opportunities.slice(0,5).map((v:any)=>clip(v,260)):[],nextActions:Array.isArray(result.nextActions)?result.nextActions.slice(0,5).map((v:any)=>clip(v,320)):[],platformNotes:Array.isArray(result.platformNotes)?result.platformNotes.slice(0,9).map((v:any)=>({platform:clip(v.platform,40),observation:clip(v.observation,240),recommendation:clip(v.recommendation,260)})):[]});
   if(mode==='audit')return Response.json({mode,score:Math.max(0,Math.min(100,Number(result.score)||0)),strengths:Array.isArray(result.strengths)?result.strengths.slice(0,6).map((v:any)=>clip(v,250)):[],improvements:Array.isArray(result.improvements)?result.improvements.slice(0,6).map((v:any)=>clip(v,250)):[],rewrite:clip(result.rewrite,5000),reason:clip(result.reason,600)});
   if(mode==='hooks'||mode==='hashtags'||mode==='replies')return Response.json({mode,items:(Array.isArray(result[mode])?result[mode]:Array.isArray(result.items)?result.items:[]).slice(0,12).map((v:any)=>clip(typeof v==='string'?v:v?.text||v?.reply||v?.hook||'',500)).filter(Boolean),note:clip(result.note,400)});
   if(mode==='ideas')return Response.json({mode,ideas:(Array.isArray(result.ideas)?result.ideas:[]).slice(0,10).map((v:any)=>typeof v==='string'?{title:clip(v,120),angle:'',format:'Post',goal:'Engagement',hook:''}:{title:clip(v.title,120),angle:clip(v.angle,300),format:clip(v.format,80),goal:clip(v.goal,80),hook:clip(v.hook,250)}).filter((v:any)=>v.title)});
