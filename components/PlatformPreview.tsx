@@ -2,6 +2,7 @@
 import {memo} from 'react';
 import {Heart,MessageCircle,Send,Bookmark,MoreHorizontal,Home,Search,Plus,Play,Volume2,Share2,Repeat2,ThumbsUp,ThumbsDown,UserRound,Music2,Clapperboard,Compass,Menu} from 'lucide-react';
 import type {ContentPost,Platform,SocialAccount} from '../lib/types';
+import PlatformIcon from './PlatformIcon';
 type Props={platform:Platform;draft:ContentPost;brand:string;accounts:SocialAccount[]};
 function Media({draft,fit='cover'}:{draft:ContentPost;fit?:'cover'|'contain'}){return draft.mediaUrl?(draft.mediaType==='video'?<video src={draft.mediaUrl} controls playsInline preload="metadata" className="channel-media" style={{objectFit:fit}}/>:<img src={draft.mediaUrl} loading="lazy" decoding="async" alt={draft.altText||'Post visual'} className="channel-media" style={{objectFit:fit}}/>):<div className="channel-empty-media"><Clapperboard size={27}/><span>Upload an image or video to preview it here</span></div>}
 function Avatar({label,src}:{label:string;src?:string}){return src?<img className="channel-avatar" src={src} alt="" loading="lazy" decoding="async"/>:<div className="channel-avatar channel-avatar-fallback">{(label||'B').slice(0,1).toUpperCase()}</div>}
@@ -15,7 +16,7 @@ function PlatformPreview({platform,draft,brand,accounts}:Props){
  const content=caption||'Your caption will appear here while you write.';
  const date='Preview';
  if(platform==='instagram')return <div className="channel-surface channel-instagram">
-   <div className="channel-mobile-header"><b>Instagram</b><span><Heart size={19}/><MessageCircle size={19}/></span></div>
+   <div className="channel-mobile-header"><b><PlatformIcon platform="instagram" size={23}/> Instagram</b><span><Heart size={19}/><MessageCircle size={19}/></span></div>
    <div className="channel-post-head"><Avatar label={label} src={account?.avatar}/><div><b>{handle}</b><small>Original audio · Preview</small></div><MoreHorizontal size={19}/></div>
    <div className="channel-insta-media"><Media draft={draft}/></div>
    <div className="channel-insta-actions"><div><Heart size={24}/><MessageCircle size={24}/><Send size={23}/></div><Bookmark size={23}/></div>
@@ -31,16 +32,38 @@ function PlatformPreview({platform,draft,brand,accounts}:Props){
    <div className="channel-tiktok-bottom">Home <Plus size={22}/> Inbox <UserRound size={19}/></div>
   </div><p className="channel-disclaimer">TikTok vertical video preview · Layout is an approximation</p></div>;
  if(platform==='facebook')return <div className="channel-surface channel-facebook">
-   <div className="channel-fb-app"><b>facebook</b><span><Search/><MessageCircle/></span></div>
+   <div className="channel-fb-app"><b><PlatformIcon platform="facebook" size={24}/> facebook</b><span><Search/><MessageCircle/></span></div>
    <div className="channel-post-head"><Avatar label={label} src={account?.avatar}/><div><b>{label}</b><small>{date} · <span aria-hidden>🌐</span></small></div><MoreHorizontal size={20}/></div>
    <div className="channel-fb-caption">{formatText(content,900)}</div><div className="channel-facebook-media"><Media draft={draft}/></div>
    <div className="channel-fb-summary">No engagement data — preview only</div><div className="channel-fb-actions"><span><ThumbsUp size={17}/> Like</span><span><MessageCircle size={17}/> Comment</span><span><Share2 size={17}/> Share</span></div>
   </div>;
  if(platform==='youtube')return <div className="channel-surface channel-youtube">
-   <div className="channel-youtube-head"><b><span>▶</span> YouTube</b><span><Search size={18}/><UserRound size={19}/></span></div>
+   <div className="channel-youtube-head"><b><PlatformIcon platform="youtube" size={26}/> YouTube</b><span><Search size={18}/><UserRound size={19}/></span></div>
    <div className="channel-video-frame"><Media draft={draft}/></div>
    <div className="channel-youtube-body"><h4>{draft.title||'Untitled video'}</h4><p>Preview · {draft.visibility==='unlisted'?'Unlisted':'No view data'}</p><div className="channel-youtube-author"><Avatar label={label} src={account?.avatar}/><div><strong>{label}</strong><small>Subscriber count unavailable</small></div><span className="channel-follow-placeholder">Subscribe</span></div><p className="channel-youtube-description">{formatText(content,440)}</p></div>
    {draft.mediaType!=='video'&&<div className="channel-format-note">YouTube publishing in this version requires a video upload.</div>}
+  </div>;
+ if(platform==='linkedin')return <div className="channel-surface channel-linkedin">
+   <div className="channel-linkedin-head"><PlatformIcon platform="linkedin" size={27}/><b>LinkedIn</b><span>Search</span></div>
+   <div className="channel-post-head"><Avatar label={label} src={account?.avatar}/><div><b>{label}</b><small>{handle} · Preview</small></div><MoreHorizontal size={19}/></div>
+   <div className="channel-li-copy">{formatText(content,1200)}</div><div className="channel-li-media"><Media draft={draft}/></div>
+   <div className="channel-li-actions"><span>Like</span><span>Comment</span><span>Repost</span><span>Send</span></div><div className="channel-muted">LinkedIn feed preview · Layout may vary by profile or organization</div>
+  </div>;
+ if(platform==='threads')return <div className="channel-surface channel-threads">
+   <div className="channel-threads-head"><PlatformIcon platform="threads" size={25}/><b>Threads</b><span>⌕</span></div>
+   <div className="channel-post-head"><Avatar label={label} src={account?.avatar}/><div><b>{handle}</b><small>Preview · now</small></div><MoreHorizontal size={19}/></div>
+   <div className="channel-threads-copy">{formatText(content,500)}</div>{draft.mediaUrl&&<div className="channel-threads-media"><Media draft={draft}/></div>}
+   <div className="channel-threads-actions"><Heart/><MessageCircle/><Repeat2/><Send/></div><div className="channel-muted">Threads post preview · No engagement data</div>
+  </div>;
+ if(platform==='pinterest')return <div className="channel-surface channel-pinterest">
+   <div className="channel-pin-head"><PlatformIcon platform="pinterest" size={25}/><b>Pinterest</b><span>Explore</span></div>
+   <div className="channel-pin-card"><div className="channel-pin-image"><Media draft={draft} fit="cover"/></div><div className="channel-pin-body"><h4>{draft.title||'Your Pin title'}</h4><p>{formatText(content,420)}</p><small>{handle} · Preview</small></div></div>
+   <div className="channel-muted">Pin preview · Choose a board in your connected account flow</div>
+  </div>;
+ if(platform==='google_business')return <div className="channel-surface channel-google-business">
+   <div className="channel-gbp-head"><PlatformIcon platform="google_business" size={27}/><div><b>Google Business Profile</b><small>Business update · Preview</small></div><MoreHorizontal size={18}/></div>
+   <div className="channel-gbp-body"><div className="channel-gbp-brand"><Avatar label={label} src={account?.avatar}/><div><strong>{label}</strong><small>Business Profile</small></div></div><p>{formatText(content,1200)}</p>{draft.mediaUrl&&<div className="channel-gbp-media"><Media draft={draft}/></div>}{draft.link&&<span className="channel-gbp-link">{draft.cta||'Learn more'} ↗</span>}</div>
+   <div className="channel-muted">Google Business update preview · Verify location and CTA before publishing</div>
   </div>;
  return <div className="channel-surface channel-x">
    <div className="channel-x-head"><span>𝕏</span><b>Post</b><MoreHorizontal size={18}/></div>
