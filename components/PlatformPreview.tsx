@@ -26,7 +26,7 @@ function PlatformPreview({platform,draft,brand,accounts}:Props){
   </div>;
  if(platform==='tiktok')return <div className="channel-tiktok-shell"><div className="channel-tiktok-player">
    <div className="channel-tiktok-back"><Media draft={draft}/></div>
-   <div className="channel-tiktok-top"><span>Following</span><b>For You</b><Search size={19}/></div>
+   <div className="channel-tiktok-top"><PlatformIcon platform="tiktok" size={22}/><span>Following</span><b>For You</b><Search size={19}/></div>
    <div className="channel-tiktok-rail"><Avatar label={label} src={account?.avatar}/><Heart/><MessageCircle/><Bookmark/><Share2/><Music2/></div>
    <div className="channel-tiktok-caption"><strong>@{handle}</strong><p>{formatText(content,230)}</p><small><Music2 size={13}/> Original audio</small></div>
    <div className="channel-tiktok-bottom">Home <Plus size={22}/> Inbox <UserRound size={19}/></div>
@@ -66,7 +66,7 @@ function PlatformPreview({platform,draft,brand,accounts}:Props){
    <div className="channel-muted">Google Business update preview · Verify location and CTA before publishing</div>
   </div>;
  return <div className="channel-surface channel-x">
-   <div className="channel-x-head"><span>𝕏</span><b>Post</b><MoreHorizontal size={18}/></div>
+   <div className="channel-x-head"><PlatformIcon platform="x" size={22}/><b>Post</b><MoreHorizontal size={18}/></div>
    <div className="channel-post-head"><Avatar label={label} src={account?.avatar}/><div><b>{label} <span>@{handle} · now</span></b></div><MoreHorizontal size={18}/></div>
    <div className="channel-x-content">{formatText(content,280)}</div>
    {draft.mediaUrl&&<div className="channel-x-media"><Media draft={draft}/></div>}
