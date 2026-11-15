@@ -10,6 +10,7 @@ A **real, authenticated Next.js application**, with a persistent, context-aware 
 - Save drafts, send posts to review, schedule for later, publish now, duplicate content, edit, delete, and browse the calendar.
 - Media library, automatic per-account job records, publishing failures, explicit unsupported-format notices, limited retry controls, export `.ics` calendar.
 - Always-available right-side **Omni AI** chat, minimizable floating bubble, saved conversation history, microphone dictation where supported, real Gemini API inference using each user's own encrypted key, live context from your actual posts/calendar/connected accounts/errors. AI can propose platform-tailored posts, multi-day editorial plans, and reschedules; every write needs an explicit review/confirmation.
+- **Community Management Center** with one inbox for supported social comments, Instagram/Bluesky/Facebook Messenger/WhatsApp conversations where the provider account permits reads, and Google Business Profile reviews. Includes AI-assisted response drafts, explicit human approval before sending, customer status/priority/tags, private notes, follow-up dates, and a per-contact interaction timeline. Sending is enabled only on the provider's supported channels.
 - Real posting adapters: Facebook Page text/photos; Instagram Professional image/Reels (processing-sensitive); TikTok video/photo via verified URL ingestion (submission state); YouTube video upload (50 MB per file in this implementation); X text only. **These have not been end-to-end tested with authorized live accounts.** Specific formats and API scopes may require further implementation or platform approval.
 
 ## Quick start
@@ -24,6 +25,10 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. Without Supabase configuration the UI shows a clear setup screen (not simulated accounts or sample AI responses). Full step-by-step instructions: **[SETUP.md](SETUP.md)**.
+
+## Community management data
+
+The `supabase/migrations/20261115212411_omnipost_community_management_center.sql` migration creates the private contact and interaction-history tables. It is applied to the existing EstateFlow Supabase project used by OmniPost. Both tables have explicit authenticated-role grants and user-scoped Row Level Security. Social interactions are read from the connected Upload-Post profile; refreshing the inbox fetches recent comments from the latest three posts per supported channel, recent DM conversations where enabled, and the selected Google Business location's reviews. Platform permissions and provider plan limits still apply.
 
 ## What AI can and cannot do
 
