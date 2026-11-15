@@ -1,7 +1,8 @@
-import {userDb,verifyUser,encrypt,fail} from '../../../../lib/server';
+import {userDb,verifyUser,encrypt,decrypt,fail} from '../../../../lib/server';
 export const runtime='nodejs';
-const DEFAULT_MODEL='gemini-3.5-flash-lite';
-const CANDIDATES=['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.8-flash','gemini-2.5-flash-lite'];
+const DEFAULT_MODEL='gemini-3.5-flash';
+const CANDIDATES=['gemini-3.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite'];
+const ALLOWED_MODELS=new Set(CANDIDATES);
 async function requestGoogle(key:string,model:string){
  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{
    method:'POST',
@@ -48,6 +49,20 @@ export async function POST(req:Request){
   if(error){return Response.json({error:'Key validation passed, but saving the encrypted key failed: '+error.message,stage:'storage'},{status:500})}
   return Response.json({configured:true,provider:'gemini-personal',model:selected,verified:true});
  }catch(e){return fail(e,e instanceof Error&&/session|sign in/i.test(e.message)?401:500)}
+}
+export async function PATCH(req:Request){
+ try{
+  const user=await verifyUser(req),body=await req.json(),model=String(body.model||'');
+  if(!ALLOWED_MODELS.has(model))return Response.json({error:'Select a supported free-tier Gemini model.'},{status:400});
+  const db=userDb(req),{data,error}=await db.from('omnipost_user_ai_settings').select('key_ciphertext').eq('user_id',user.id).maybeSingle();
+  if(error)throw error;
+  if(!data?.key_ciphertext)return Response.json({error:'Reconnect your personal Gemini key before changing its model.'},{status:409});
+  const checked=await requestGoogle(decrypt(data.key_ciphertext),model);
+  if(!checked.ok)return Response.json({error:reasonFromGoogle(checked.status,checked.reason),stage:'model'},{status:422});
+  const {error:saveError}=await db.from('omnipost_user_ai_settings').update({model,updated_at:new Date().toISOString()}).eq('user_id',user.id);
+  if(saveError)throw saveError;
+  return Response.json({configured:true,provider:'gemini-personal',model,verified:true});
+ }catch(e){return fail(e,e instanceof Error&&/sign in|Invalid or expired/i.test(e.message)?401:500)}
 }
 export async function DELETE(req:Request){
  try{
