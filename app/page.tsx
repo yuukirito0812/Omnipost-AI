@@ -10,10 +10,12 @@ const ManagedAccountSync=dynamic(()=>import('../components/ManagedAccountSync'),
 const CommandPalette=dynamic(()=>import('../components/CommandPalette'),{ssr:false});
 import type {ContentPost,Platform,PostStatus,SocialAccount} from '../lib/types';
 import {INITIAL_POST,PLATFORMS} from '../lib/types';
+import PlatformIcon from '../components/PlatformIcon';
+const AIStudioPanel=dynamic(()=>import('../components/AIStudioPanel'),{ssr:false,loading:()=> <div className="studio-preview-loading">Opening AI studio…</div>});
 type View='overview'|'compose'|'calendar'|'posts'|'library'|'ai'|'accounts'|'analytics'|'settings';
 type Notice={type:'ok'|'bad'|'info';text:string}|null;
 type Health={live:boolean;server:boolean;ai:boolean;providers:Record<string,boolean>};
-const PLATFORM_META:Record<Platform,{label:string;letter:string;color:string;cls:string;hint:string}>={instagram:{label:'Instagram',letter:'◎',color:'#f571ba',cls:'ig',hint:'Feed · Reels'},facebook:{label:'Facebook',letter:'f',color:'#4a9aff',cls:'fb',hint:'Pages'},tiktok:{label:'TikTok',letter:'♪',color:'#55e6dc',cls:'tt',hint:'Videos · Photos'},youtube:{label:'YouTube',letter:'▶',color:'#ff777a',cls:'yt',hint:'Videos · Shorts'},x:{label:'X (Twitter)',letter:'𝕏',color:'#f2f2fb',cls:'xx',hint:'Text posts'}};
+const PLATFORM_META:Record<Platform,{label:string;letter:string;color:string;cls:string;hint:string}>={instagram:{label:'Instagram',letter:'◎',color:'#f571ba',cls:'ig',hint:'Feed · Reels'},facebook:{label:'Facebook',letter:'f',color:'#4a9aff',cls:'fb',hint:'Pages'},tiktok:{label:'TikTok',letter:'♪',color:'#55e6dc',cls:'tt',hint:'Videos · Photos'},youtube:{label:'YouTube',letter:'▶',color:'#ff777a',cls:'yt',hint:'Videos · Shorts'},x:{label:'X',letter:'𝕏',color:'#151515',cls:'xx',hint:'Text posts'},linkedin:{label:'LinkedIn',letter:'in',color:'#0a66c2',cls:'li',hint:'Profiles · Pages'},threads:{label:'Threads',letter:'@',color:'#111111',cls:'th',hint:'Text · Media'},pinterest:{label:'Pinterest',letter:'P',color:'#bd081c',cls:'pin',hint:'Pins · Boards'},google_business:{label:'Google Business',letter:'G',color:'#4285f4',cls:'gbp',hint:'Business Profile posts'}};
 const STARTERS=[
  {name:'Quick tip',note:'Share a useful insight',icon:'✳',title:'A useful tip',caption:'A quick tip for [audience]: [your advice].\n\nWhy it matters: [one clear benefit].'},
  {name:'Spotlight',note:'Feature a listing or project',icon:'◈',title:'In focus',caption:'Today’s spotlight: [property or project].\n\nHere’s what stands out: [detail 1], [detail 2], [detail 3].\n\nWant to know more? [next step].'},
