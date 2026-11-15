@@ -70,6 +70,7 @@ const critical=[
  ['channel-specific content requirements',aiRoute.includes('platformGuidance')&&aiRoute.includes('Google Business Profile')],
  ['live analytics route uses authenticated provider profile',analyticsApi.includes("verifyUser(req)")&&analyticsApi.includes("api/analytics/")&&analyticsApi.includes("api_key_ciphertext")&&analyticsApi.includes("period")],
  ['analytics dashboard shows provider metrics',analytics.includes("Live provider insights")&&analytics.includes("Performance by platform")&&analytics.includes("extractMetrics")],
+ ['analytics daily impressions trend uses provider snapshots',analytics.includes('Daily impressions')&&analytics.includes('snapshot?.totalPerDay')&&analytics.includes('analytics-trend-bars')],
  ['analytics does not invent missing metrics',analytics.includes("Not supplied by this provider response")&&analytics.includes("never estimated")],
  ['AI performance coach uses real analytics payload',analytics.includes("mode:'performance'")&&analytics.includes('snapshot.platforms')&&aiRoute.includes("mode==='performance'")],
  ['analytics refresh and account destinations',analytics.includes('setRefreshKey(v=>v+1)')&&analytics.includes('Impression reporting period')&&analyticsApi.includes('last_3months')&&page.includes('facebookPageId={facebookPageId}')&&page.includes('linkedinPageId={linkedinPageId}')],
