@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=path=>fs.readFileSync(path,'utf8');
 const loginHub=read('components/ManagedAccountSync.tsx'),loginApi=read('app/api/managed-social/connect/route.ts'),page=read('app/page.tsx'),ai=read('components/AssistantPanel.tsx'),routes=read('app/api/ai/settings/route.ts'),model=read('lib/ai-gateway.ts'),preview=read('components/PlatformPreview.tsx'),social=read('components/SocialConnectionGuide.tsx'),health=read('app/api/health/route.ts'),layout=read('app/layout.tsx');
 const publish=read('app/api/managed-social/publish/route.ts'),postApi=read('app/api/posts/route.ts'),statusApi=read('app/api/managed-social/status/route.ts');
-const studio=read('app/studio.css'),commands=read('components/CommandPalette.tsx');
+const studio=read('app/studio.css'),commands=read('components/CommandPalette.tsx'),aiStudio=read('components/AIStudioPanel.tsx'),aiRoute=read('app/api/ai/route.ts'),platformIcon=read('components/PlatformIcon.tsx'),types=read('lib/types.ts'),managedRoute=read('app/api/managed-social/route.ts');
 const critical=[
  ['account menu',page.includes('omni-profile-trigger')&&page.includes('onClick={()=>{setProfileOpen(v=>!v)')],
  ['workspace menu',page.includes('omni-workspace-trigger')&&page.includes('setWorkspaceOpen(v=>!v)')],
@@ -28,7 +28,7 @@ const critical=[
  ['complete OAuth readiness',health.includes("'_CLIENT_SECRET'")&&social.includes('serverReady')],
  ['secure redirect links',social.includes('oauth/callback/')&&social.includes('navigator.clipboard')],
  ['managed official social login screen',page.includes('<ManagedAccountSync')&&loginHub.includes('omni-login-network')&&loginHub.includes('NETWORKS')],
- ['social password privacy',loginHub.includes('passwords stay with the platforms')&&loginApi.includes("username")&&loginApi.includes('userDb(req)')],
+ ['social password privacy',loginHub.includes('never asks for your social password')&&loginApi.includes("username")&&loginApi.includes('userDb(req)')],
  ['no false live social connections',loginHub.includes('reauthRequired')&&loginHub.includes('connected')],
  ['clickable overview stats and drafts',page.includes('omni-stat-action')&&page.includes("setPostFilter('open')")],
  ['publish now shortcut',page.includes('Post now</b>')&&page.includes("setScheduleMode('now')")],
@@ -54,7 +54,21 @@ const critical=[
  ['cleanup auth subscription',page.includes('subscription?.unsubscribe()')&&page.includes('controller.abort()')],
  ['lazy media previews',preview.includes('preload="metadata"')&&preview.includes('decoding="async"')&&preview.includes('memo(PlatformPreview)')],
  ['respect reduced motion',studio.includes('prefers-reduced-motion')],
- ['new theme responsive',studio.includes('@media(max-width:600px)')&&studio.includes('studio-starters-grid')]
+ ['new theme responsive',studio.includes('@media(max-width:600px)')&&studio.includes('studio-starters-grid')],
+ ['expanded platform set',types.includes("'linkedin'|'threads'|'pinterest'|'google_business'")&&managedRoute.includes("'google_business'")&&publish.includes("'linkedin'")],
+ ['native social brand marks',platformIcon.includes('instagram:')&&platformIcon.includes('linkedin:')&&platformIcon.includes('google_business:')&&page.includes('<PlatformIcon')],
+ ['native platform post previews',preview.includes("platform==='linkedin'")&&preview.includes("platform==='threads'")&&preview.includes("platform==='pinterest'")&&preview.includes("platform==='google_business'")],
+ ['Facebook Page picker in composer',page.includes('Publish as Facebook Page')&&loginHub.includes('omni-facebook-page-picker')&&publish.includes('facebook_page_id')],
+ ['client profile selection synced',page.includes('selectedProfile={managedProfile}')&&page.includes('onProfileChange')&&loginHub.includes('Client / brand')],
+ ['Instagram professional account guidance',loginHub.includes('Business or Creator account')&&loginHub.includes('personal consumer accounts cannot publish')],
+ ['managed OAuth supports more channels',loginApi.includes("'linkedin','threads','pinterest','google_business'")&&loginApi.includes('linkedin.com')&&loginApi.includes('threads.net')],
+ ['AI SMM toolkit actions',aiStudio.includes("id:'repurpose'")&&aiStudio.includes("id:'calendar'")&&aiStudio.includes("id:'audit'")&&aiStudio.includes("id:'replies'")],
+ ['AI toolkit is connected to authenticated endpoint',aiStudio.includes("fetch('/api/ai'")&&aiStudio.includes('Authorization:Bearer')&&aiRoute.includes("const MODES=new Set")],
+ ['AI calendar saved as drafts',aiStudio.includes('onSavePlan(result.calendarPlan||[])')&&aiStudio.includes('Save plan as drafts')],
+ ['verified Gemini free models',routes.includes('gemini-3.5-flash')&&routes.includes('gemini-3.1-flash-lite')&&routes.includes('ALLOWED_MODELS')],
+ ['secure Gemini model switching',routes.includes('export async function PATCH')&&routes.includes('decrypt(data.key_ciphertext)')&&page.includes("authApi('/api/ai/settings','PATCH'")],
+ ['channel-specific content requirements',aiRoute.includes('platformGuidance')&&aiRoute.includes('Google Business Profile')]
+ ]
 
 ];
 for(const [name,pass] of critical)assert(pass, 'Broken contract: '+name);
