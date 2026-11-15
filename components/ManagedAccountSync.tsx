@@ -9,7 +9,7 @@ type Data={configured:boolean;profiles:Profile[];plan:string|null;limit:number|n
 type SocialID='facebook'|'instagram'|'youtube'|'x'|'tiktok'|'linkedin'|'threads'|'pinterest'|'google_business';
 const NETWORKS:{id:SocialID;name:string;detail:string;accent:string;accountHint:string}[]=[
  {id:'facebook',name:'Facebook',detail:'Continue with Facebook',accent:'facebook',accountHint:'Sign in with your personal Facebook login, then choose a Page you manage. Publishing is as the Page, not your personal timeline.'},
- {id:'instagram',name:'Instagram',detail:'Continue with Instagram',accent:'instagram',accountHint:'Requires an Instagram Business or Creator account. Personal consumer accounts cannot publish through this API.'},
+ {id:'instagram',name:'Instagram',detail:'Continue with Instagram',accent:'instagram',accountHint:'Requires an Instagram Business or Creator account. personal consumer accounts cannot publish through this API.'},
  {id:'youtube',name:'YouTube',detail:'Continue with Google',accent:'youtube',accountHint:'Sign in with Google and authorize the YouTube channel you want to manage.'},
  {id:'tiktok',name:'TikTok',detail:'Continue with TikTok',accent:'tiktok',accountHint:'Connect a TikTok account. Direct public posting is subject to TikTok app approval and audit.'},
  {id:'x',name:'X',detail:'Continue with X',accent:'x',accountHint:'Connect the X profile you want to publish from. Provider and X API plan limits apply.'},
