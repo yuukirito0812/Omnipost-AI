@@ -4,7 +4,7 @@ import {ArrowUpRight,CheckCircle2,ChevronDown,ExternalLink,Info,KeyRound,LockKey
 import PlatformIcon from './PlatformIcon';
 
 type Account={platform:string;name:string;handle:string;reauthRequired?:boolean;avatar?:string};
-type Profile={username:string;accounts:Account[];facebookPages?:{id:string;name:string}[];facebookWarning?:string};
+type Profile={username:string;accounts:Account[];facebookPages?:{id:string;name:string}[];linkedinPages?:{id:string;name:string;picture?:string}[];pinterestBoards?:{id:string;name:string}[];googleBusinessLocations?:{id:string;name:string}[];facebookWarning?:string};
 type Data={configured:boolean;profiles:Profile[];plan:string|null;limit:number|null};
 type SocialID='facebook'|'instagram'|'youtube'|'x'|'tiktok'|'linkedin'|'threads'|'pinterest'|'google_business';
 const NETWORKS:{id:SocialID;name:string;detail:string;accent:string;accountHint:string}[]=[
@@ -19,7 +19,7 @@ const NETWORKS:{id:SocialID;name:string;detail:string;accent:string;accountHint:
  {id:'google_business',name:'Google Business',detail:'Continue with Google',accent:'google-business',accountHint:'Connect the Google account that manages the Business Profile location.'}
 ];
 const EMPTY:Data={configured:false,profiles:[],plan:null,limit:null};
-export default function ManagedAccountSync({token,onUpdate,selectedProfile,onProfileChange,selectedFacebookPageId,onFacebookPageChange}:{token:string|null;onUpdate?:(data:Data)=>void;selectedProfile?:string;onProfileChange?:(profile:string)=>void;selectedFacebookPageId?:string;onFacebookPageChange?:(pageId:string)=>void}){
+export default function ManagedAccountSync({token,onUpdate,selectedProfile,onProfileChange,selectedFacebookPageId,onFacebookPageChange,selectedLinkedinPageId,onLinkedinPageChange,selectedPinterestBoardId,onPinterestBoardChange,selectedGoogleBusinessLocationId,onGoogleBusinessLocationChange}:{token:string|null;onUpdate?:(data:Data)=>void;selectedProfile?:string;onProfileChange?:(profile:string)=>void;selectedFacebookPageId?:string;onFacebookPageChange?:(pageId:string)=>void;selectedLinkedinPageId?:string;onLinkedinPageChange?:(pageId:string)=>void;selectedPinterestBoardId?:string;onPinterestBoardChange?:(boardId:string)=>void;selectedGoogleBusinessLocationId?:string;onGoogleBusinessLocationChange?:(locationId:string)=>void}){
  const [data,setData]=useState<Data>(EMPTY),[profile,setProfile]=useState(''),[key,setKey]=useState(''),[showAdvanced,setShowAdvanced]=useState(false);
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(false),[starting,setStarting]=useState<string|null>(null);
  const [error,setError]=useState(''),[message,setMessage]=useState('');
@@ -78,6 +78,9 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
  const count=connected.filter(a=>!a.reauthRequired).length;
  const planName=String(data.plan||'').toLowerCase();const isFree=planName==='default'||planName==='free'||planName.includes('free');
  const chosenPage=active?.facebookPages?.find(p=>p.id===selectedFacebookPageId)||active?.facebookPages?.[0];
+ const chosenLinkedinPage=active?.linkedinPages?.find(p=>p.id===selectedLinkedinPageId);
+ const chosenPinterestBoard=active?.pinterestBoards?.find(p=>p.id===selectedPinterestBoardId)||active?.pinterestBoards?.[0];
+ const chosenGoogleLocation=active?.googleBusinessLocations?.find(p=>p.id===selectedGoogleBusinessLocationId)||active?.googleBusinessLocations?.[0];
  return <section className="omni-login-hub" id="omni-login-hub">
    <div className="omni-login-hero">
     <div className="omni-login-hero-title">
@@ -121,6 +124,9 @@ export default function ManagedAccountSync({token,onUpdate,selectedProfile,onPro
      })}
    </div>
    {active?.facebookPages?.length&&<div className="omni-facebook-page-picker"><div><strong><Facebook size={16}/> Publishing Page</strong><small>Choose the Facebook Page your posts should appear from.</small></div><select aria-label="Default Facebook Page" value={chosenPage?.id||''} onChange={e=>onFacebookPageChange?.(e.target.value)}>{active.facebookPages.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><p>Sign in with your personal Facebook login to grant access. OmniPost publishes as this Page, not to your personal timeline.</p></div>}
+   {connected.some(a=>a.platform==='linkedin'&&!a.reauthRequired)&&<div className="omni-destination-picker linkedin"><div><strong><PlatformIcon platform="linkedin" size={19}/> LinkedIn destination</strong><small>Choose your personal profile or an organization Page you administer.</small></div><select aria-label="LinkedIn publishing destination" value={selectedLinkedinPageId||''} onChange={e=>onLinkedinPageChange?.(e.target.value)}><option value="">Personal profile</option>{active?.linkedinPages?.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><p>Company Page posting requires the appropriate LinkedIn admin permission. A Page pinned in Upload-Post takes priority.</p></div>}
+   {connected.some(a=>a.platform==='pinterest'&&!a.reauthRequired)&&<div className="omni-destination-picker pinterest"><div><strong><PlatformIcon platform="pinterest" size={19}/> Pinterest board</strong><small>Every Pin needs a public board.</small></div>{chosenPinterestBoard?<select aria-label="Pinterest board" value={selectedPinterestBoardId||chosenPinterestBoard.id} onChange={e=>onPinterestBoardChange?.(e.target.value)}>{active?.pinterestBoards?.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>:<a href="https://www.pinterest.com/" target="_blank" rel="noreferrer">Create a board on Pinterest <ExternalLink size={12}/></a>}<p>Secret boards are excluded. Create a public board if none appears.</p></div>}
+   {connected.some(a=>a.platform==='google_business'&&!a.reauthRequired)&&<div className="omni-destination-picker google-business"><div><strong><PlatformIcon platform="google_business" size={19}/> Google Business location</strong><small>Choose the storefront or service-area profile for this client.</small></div>{chosenGoogleLocation?<select aria-label="Google Business location" value={selectedGoogleBusinessLocationId||chosenGoogleLocation.id} onChange={e=>onGoogleBusinessLocationChange?.(e.target.value)}>{active?.googleBusinessLocations?.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>:<span className="omni-destination-empty">No locations returned. Check that the connected Google account manages a verified Business Profile.</span>}<p>A location pinned in Upload-Post takes priority over the selection here.</p></div>}
    {active?.facebookWarning&&<div className="omni-login-explain"><Info size={16}/><span>Facebook is signed in. Publishing to Facebook still requires selecting a Page you manage; personal timeline posting isn't available through this API. <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener noreferrer">Create a Page</a>.</span></div>}
    {error&&<div className="omni-login-error" role="alert">{error}</div>}
    {message&&<div className="omni-login-message" role="status">{message}</div>}
