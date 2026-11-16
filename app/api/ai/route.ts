@@ -1,10 +1,11 @@
 import {verifyUser,fail} from '../../../lib/server';
 import {generateMarketingText,parseAIJson} from '../../../lib/ai-gateway';
-import {PLATFORMS,type Platform} from '../../../lib/types';
+import {CHANNELS, channelCopy, channelTitleField} from '../../../lib/channel-formats';
+import {INITIAL_POST, PLATFORMS,type Platform} from '../../../lib/types';
 export const runtime='nodejs';
 export const maxDuration=45;
-type Mode='post'|'hooks'|'hashtags'|'calendar'|'repurpose'|'audit'|'ideas'|'replies'|'performance'|'community_reply';
-const MODES=new Set<Mode>(['post','hooks','hashtags','calendar','repurpose','audit','ideas','replies','performance','community_reply']);
+type Mode='post'|'hooks'|'hashtags'|'calendar'|'repurpose'|'audit'|'ideas'|'replies'|'performance'|'community_reply'|'caption_variants'|'growth_audit';
+const MODES=new Set<Mode>(['post','hooks','hashtags','calendar','repurpose','audit','ideas','replies','performance','community_reply','caption_variants','growth_audit']);
 const clip=(v:unknown,n=1800)=>String(v??'').trim().slice(0,n);
 const cleanPlatforms=(value:unknown):Platform[]=>{
  const values=Array.isArray(value)?value.filter((v):v is Platform=>typeof v==='string'&&PLATFORMS.includes(v as Platform)):[];
@@ -33,12 +34,19 @@ export async function POST(req:Request){
   const mode=(MODES.has(body.mode)?body.mode:'post') as Mode;
   const topic=clip(body.topic,1800),caption=clip(body.caption,5000),tone=clip(body.tone||'Natural, clear and engaging',100),goal=clip(body.goal||'Engagement',100),audience=clip(body.audience||'General audience',240),brand=clip(body.brand||'My Brand',150),interactionContext=clip(body.interactionContext,1200),platforms=cleanPlatforms(body.platforms);
   if(!topic&&!caption)throw Error(mode==='audit'||mode==='replies'||mode==='community_reply'?'Paste the post or comment first.':'Add a topic or campaign brief first.');
+  const mediaType = body.mediaType==='image'||body.mediaType==='video' ? body.mediaType : '';
+  const target = platforms[0];
+  const targetDraft = {...INITIAL_POST,mediaType};
+  const limits = channelCopy(targetDraft, target);
+  const titleField = channelTitleField(target, mediaType);
   const context=`Brand: ${brand}. Audience: ${audience}. Goal: ${goal}. Tone: ${tone}. Platforms: ${platforms.join(', ')}.
 Platform requirements:
 ${platforms.map(p=>'- '+platformGuidance[p]).join('\n')}
 Never fabricate facts, prices, locations, reviews, results, testimonials, statistics, deadlines, availability, or trending status. Use clear placeholders when facts are missing. Avoid cringe, filler, clickbait, generic AI phrases and excessive emojis. Make copy sound like a capable human SMM wrote it.`;
   const specs:Record<Mode,string>={
    post:`Create one ready-to-edit social post. Return strict JSON with title, caption, tags (hashtags), cta, firstComment, altText, and overrides (object with one platform-specific caption for every selected platform). Keep the master caption useful and make every override native to its channel. Do not repeat the same generic copy across all platforms.`,
+   caption_variants: `Write three distinct, complete captions for the selected ${CHANNELS[target].name} layout. ${CHANNELS[target].guidance} Use the reader's language and actual topic in the opening line. Vary the opening angles: lead with the practical answer, make a short actionable list, and ask a specific audience question or tell a brief true story using supplied facts. Where relevant, include one natural call to action tied to the stated goal. Use relevant search phrases without stuffing hashtags. Each caption is the entire platform copy, including any CTA or hashtags. Keep it under ${limits.limit} ${limits.unit} including spaces. ${titleField ? 'Write a separate ' + titleField.label + ' under ' + titleField.limit + ' characters.' : 'Leave the title empty.'} Return strict JSON {variants:[{angle:string,title:string,caption:string,rationale:string}]} with exactly three items. Keep rationales to one sentence about what to test. Never invent a ranking signal, trending audio, audience metrics, property facts or product claims.`,
+   growth_audit: `Build a practical growth audit for the selected channel and objective. Use verified facts supplied by the user. Mark possible causes as hypotheses. If past results are sparse, give a measurement plan. Include two original content series with an example hook, a 7-day action to start useful conversations, and a one-variable experiment the user can run. Return strict JSON {audit:string[]} with 4 to 6 concise recommendations, each a standalone item.`,
    hooks:`Create 8 distinct opening hooks for the topic. Mix curiosity, useful insight, relatable situations and clear value. No fake urgency or clickbait. Return strict JSON {hooks:string[]}.`,
    hashtags:`Suggest 12 relevant, specific hashtags for the topic and selected channels. Mix broad and niche tags, avoid spam and never claim a tag is trending. Return strict JSON {hashtags:string[],note:string}.`,
    calendar:`Create a practical 7-day social content plan for the brand. Vary formats and goals; do not make every day a sales post. Each entry must be a complete, editable draft. Return strict JSON {calendarPlan:[{title,caption,tags,cta,firstComment,altText,platforms,overrides}]}. Use 7 entries and only selected platforms. No dates are needed; the user will choose a schedule.`,
@@ -51,9 +59,25 @@ Never fabricate facts, prices, locations, reviews, results, testimonials, statis
   };
   const instructions='You are Omni, a senior social media strategist and channel editor. Produce accurate, useful and publishable work. Follow the requested JSON schema exactly. '+context;
   const prompt=`TASK: ${specs[mode]}\nBRIEF / TOPIC: ${topic||'(use source below)'}\nSOURCE CAPTION / MESSAGE: ${caption||'(none)'}\nINTERACTION CONTEXT: ${interactionContext||'(none)'}\n${context}`;
-  const raw=await generateMarketingText(instructions,prompt,mode==='calendar'?5200:mode==='ideas'?3000:3600,req);
+  const raw=await generateMarketingText(instructions,prompt,mode==='calendar'?5200:mode==='ideas'?3000:mode==='caption_variants'?2400:3600,req);
   const result=parseAIJson(raw);
   if(!result||typeof result!=='object')throw Error('AI returned an unexpected result. Try again with a shorter brief.');
+  if(mode==='caption_variants'){
+   const variants: {angle:string;title:string;caption:string;rationale:string}[]=[];
+   for(const item of Array.isArray(result.variants)?result.variants.slice(0,3):[]){
+    const variant={angle:clip(item?.angle,72),title:titleField?clip(item?.title,130):'',caption:clip(item?.caption,6000),rationale:clip(item?.rationale,240)};
+    const copy=channelCopy({...targetDraft,title:variant.title,caption:variant.caption},target);
+    const hasValidTitle=!titleField || !!variant.title && copy.titleCount<=titleField.limit;
+    if(variant.caption && hasValidTitle && copy.textCount<=limits.limit && (target!=='youtube'||!/[<>]/.test(variant.title+variant.caption)))variants.push(variant);
+   }
+   if(!variants.length)throw Error('The captions exceeded the channel limits. Try again with a shorter brief.');
+   return Response.json({mode,variants});
+  }
+  if(mode==='growth_audit'){
+   const audit=(Array.isArray(result.audit)?result.audit:[]).slice(0,6).map((item:unknown)=>clip(item,480)).filter(Boolean);
+   if(!audit.length)throw Error('The audit came back empty. Try a more specific brief.');
+   return Response.json({mode,audit});
+  }
   if(mode==='post'){
    if(typeof result.caption!=='string'||!result.caption.trim())throw Error('AI could not create a complete caption. Please try again.');
    return Response.json({mode,...normalizeProposal(result,platforms)});

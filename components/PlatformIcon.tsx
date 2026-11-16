@@ -1,12 +1,13 @@
 'use client';
 import type {Platform} from '../lib/types';
-import type {ReactNode} from 'react';
+import {useId, type ReactNode} from 'react';
 type Props={platform:Platform;size?:number;className?:string;title?:string};
 export default function PlatformIcon({platform,size=24,className='',title}:Props){
+ const instagramGradient=useId();
  const common={width:size,height:size,viewBox:'0 0 40 40',className:'platform-brand-icon '+className,role:'img' as const,'aria-label':title||platform};
  const icon:Record<Platform,ReactNode>={
   facebook:<><circle cx="20" cy="20" r="20" fill="#1877F2"/><path fill="#fff" d="M22.4 33V21.8h3.8l.6-4.4h-4.4v-2.8c0-1.3.4-2.2 2.2-2.2H27V8.5c-.4-.1-1.9-.2-3.5-.2-3.5 0-5.9 2.1-5.9 6v3.1h-4v4.4h4V33z"/></>,
-  instagram:<><defs><linearGradient id="omni-ig" x1="4" y1="36" x2="36" y2="4" gradientUnits="userSpaceOnUse"><stop stopColor="#FFB347"/><stop offset=".42" stopColor="#F04A83"/><stop offset="1" stopColor="#8549D9"/></linearGradient></defs><rect x="2" y="2" width="36" height="36" rx="11" fill="url(#omni-ig)"/><rect x="9" y="9" width="22" height="22" rx="7" fill="none" stroke="#fff" strokeWidth="2.5"/><circle cx="20" cy="20" r="5.2" fill="none" stroke="#fff" strokeWidth="2.5"/><circle cx="27.4" cy="12.8" r="1.7" fill="#fff"/></>,
+  instagram:<><defs><linearGradient id={instagramGradient} x1="4" y1="36" x2="36" y2="4" gradientUnits="userSpaceOnUse"><stop stopColor="#FFB347"/><stop offset=".42" stopColor="#F04A83"/><stop offset="1" stopColor="#8549D9"/></linearGradient></defs><rect x="2" y="2" width="36" height="36" rx="11" fill={`url(#${instagramGradient})`}/><rect x="9" y="9" width="22" height="22" rx="7" fill="none" stroke="#fff" strokeWidth="2.5"/><circle cx="20" cy="20" r="5.2" fill="none" stroke="#fff" strokeWidth="2.5"/><circle cx="27.4" cy="12.8" r="1.7" fill="#fff"/></>,
   youtube:<><rect x="2" y="7" width="36" height="26" rx="8" fill="#FF0033"/><path d="M17 13.7v12.6L27 20z" fill="#fff"/></>,
   tiktok:<><path d="M24 5h5c.3 4 2.4 6.4 6 7v5c-2.4 0-4.5-.8-6.2-2v11.2a9.2 9.2 0 1 1-9.2-9.2c.7 0 1.4.1 2 .2v5.2a4.1 4.1 0 1 0 2.4 3.8z" fill="#25F4EE" transform="translate(-1 1)"/><path d="M24 5h5c.3 4 2.4 6.4 6 7v5c-2.4 0-4.5-.8-6.2-2v11.2a9.2 9.2 0 1 1-9.2-9.2c.7 0 1.4.1 2 .2v5.2a4.1 4.1 0 1 0 2.4 3.8z" fill="#FE2C55" transform="translate(1 -1)"/><path d="M24 5h5c.3 4 2.4 6.4 6 7v5c-2.4 0-4.5-.8-6.2-2v11.2a9.2 9.2 0 1 1-9.2-9.2c.7 0 1.4.1 2 .2v5.2a4.1 4.1 0 1 0 2.4 3.8z" fill="#111"/></>,
   x:<><path fill="currentColor" d="M5 4h8.2l8.3 11.1L31 4h4L23.3 17.8 36 36h-8.2l-9.1-12.2L8 36H4l12.5-14.6z"/><path fill="currentColor" d="M11.2 7 29.5 33h-2.7L8.5 7z"/></>,

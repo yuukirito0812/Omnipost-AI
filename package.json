@@ -11,18 +11,20 @@
     "check": "tsc --noEmit && npm test"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "ai": "^7.0.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.468.0",
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@supabase/supabase-js": "^2.57.0",
-    "lucide-react": "^0.468.0",
-    "date-fns": "^4.1.0",
-    "ai": "^7.0.0"
+    "twitter-text": "3.1.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
     "@types/node": "^22.18.0",
     "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0"
+    "@types/react-dom": "^19.1.0",
+    "@types/twitter-text": "3.1.10",
+    "typescript": "^5.9.2"
   }
 }
