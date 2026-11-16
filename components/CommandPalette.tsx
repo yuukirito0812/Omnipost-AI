@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Search,ArrowUpRight,PenLine,CalendarDays,Files,Image as ImageIcon,Sparkles,Link2,BarChart3,Settings2,LayoutDashboard,Command,X} from 'lucide-react';
-type View='overview'|'compose'|'calendar'|'posts'|'library'|'ai'|'accounts'|'analytics'|'settings';
+type View='overview'|'compose'|'calendar'|'posts'|'library'|'ai'|'accounts'|'analytics'|'settings'|'growth';
 type Props={open:boolean;onClose:()=>void;onNavigate:(view:View)=>void;onNewPost:()=>void;onSchedule:()=>void;onOpenDrafts:()=>void};
 const ACTIONS=[
  {label:'Overview',hint:'Dashboard',view:'overview',icon:LayoutDashboard},
@@ -13,6 +13,7 @@ const ACTIONS=[
  {label:'Media assets',hint:'Images and videos',view:'library',icon:ImageIcon},
  {label:'AI studio',hint:'Write with Gemini',view:'ai',icon:Sparkles},
  {label:'Social accounts',hint:'Connect channels',view:'accounts',icon:Link2},
+ {label:'Growth Lab',hint:'Campaigns, caption ideas and posting times',view:'growth',icon:BarChart3},
  {label:'Analytics',hint:'Content activity',view:'analytics',icon:BarChart3},
  {label:'Settings',hint:'Workspace preferences',view:'settings',icon:Settings2}
 ] as const;

@@ -1,12 +1,12 @@
 import {verifyUser,userDb,fail} from '../../../lib/server';
-import type {ContentPost} from '../../../lib/types';
+import {postHasContent, type ContentPost} from '../../../lib/types';
 export const runtime='nodejs';
 const editable=new Set(['draft','review','scheduled']);
 const validUuid=(s:any)=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(s);
 function validate(post:ContentPost,status:string){
  if(!editable.has(status))throw Error('Use the managed publishing action for real social delivery.');
- if(!post.title?.trim()&&!post.caption?.trim()&&!post.mediaUrl)throw Error('Add a caption, title, or media before saving.');
- if(status==='scheduled'&&(!post.scheduledAt||Date.parse(post.scheduledAt)<Date.now()+60000))throw Error('Select a future date and time.');
+ if(!postHasContent(post))throw Error('Add a caption, title, or media before saving.');
+ if(status==='scheduled'&&(!Number.isFinite(Date.parse(post.scheduledAt))||Date.parse(post.scheduledAt)<Date.now()+60000))throw Error('Select a future date and time.');
 }
 export async function POST(req:Request){
  try{

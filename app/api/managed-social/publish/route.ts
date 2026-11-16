@@ -1,5 +1,6 @@
 import {verifyUser,userDb,decrypt,fail} from '../../../../lib/server';
-import type {ContentPost,Platform} from '../../../../lib/types';
+import {postHasContent, type ContentPost, type Platform} from '../../../../lib/types';
+import {CHANNELS, channelIssues, managedChannelFields} from '../../../../lib/channel-formats';
 import {randomUUID} from 'node:crypto';
 export const runtime='nodejs';
 export const maxDuration=60;
@@ -24,8 +25,10 @@ export async function POST(req:Request){
   const profile=String(payload.profile||'').trim();
   const selected:Platform[]=Array.isArray(payload.platforms)?Array.from(new Set<Platform>(payload.platforms.filter((p:unknown):p is Platform=>typeof p==='string'&&recognized.has(p)))):[];
   if(!post||!mode||!profile||!selected.length||selected.some(p=>!recognized.has(p)))return failure(400,'Choose your Upload-Post profile and at least one connected social account before posting.');
-  if(!post.title?.trim()&&!post.caption?.trim()&&!post.mediaUrl)return failure(400,'Add a caption, title or media before publishing.');
+  if(!postHasContent(post))return failure(400,'Add a caption, title or media before publishing.');
   if(mode==='schedule'&&(!post.scheduledAt||!Number.isFinite(Date.parse(post.scheduledAt))||Date.parse(post.scheduledAt)<Date.now()+60000))return failure(400,'Choose a valid future time for scheduled publishing.');
+  const issue = selected.flatMap(platform => channelIssues(post,platform).map(message => CHANNELS[platform].name + ': ' + message))[0];
+  if(issue)return failure(400,issue);
   const {data:settings,error:settingsError}=await db.from('omnipost_managed_social_settings').select('api_key_ciphertext').eq('user_id',user.id).maybeSingle();
   if(settingsError)throw Error('Could not read social connection: '+settingsError.message);
   if(!settings?.api_key_ciphertext)return failure(409,'Connect your Upload-Post API key in Social Accounts before posting.');
@@ -86,17 +89,18 @@ export async function POST(req:Request){
   const form=new FormData();
   form.set('user',profile);
   for(const p of selected)form.append('platform[]',p);
-  const caption=[post.caption.trim(),post.cta.trim(),post.tags.trim()].filter(Boolean).join('\n\n')||post.title.trim();
-  form.set('title',post.mediaType==='video'&&selected.includes('youtube')?(post.title.trim()||caption.slice(0,95)):caption);
+  for(const [key,value] of Object.entries(managedChannelFields(post,selected)))form.set(key,value);
   if(facebookPageId)form.set('facebook_page_id',facebookPageId);
   if(linkedinPageId)form.set('target_linkedin_page_id',linkedinPageId);
   if(pinterestBoardId)form.set('pinterest_board_id',pinterestBoardId);
   if(googleBusinessLocationId)form.set('gbp_location_id',googleBusinessLocationId);
-  if(post.mediaType==='video')form.set('description',caption);
+  if(post.mediaType==='video'&&selected.includes('youtube')){
+   form.set('privacyStatus',post.visibility||'public');
+   form.set('selfDeclaredMadeForKids',String(!!post.madeForKids));
+   form.set('containsSyntheticMedia',String(!!post.syntheticMedia));
+  }
   if(post.firstComment?.trim())form.set('first_comment',post.firstComment.slice(0,900));
   if(mode==='schedule')form.set('scheduled_date',new Date(post.scheduledAt).toISOString());
-  // Per-platform caption overrides are supported by Upload-Post.
-  for(const p of selected){const alternate=post.overrides?.[p];if(alternate?.trim())form.set(p+'_title',alternate.trim())}
   const requestId='omni-'+id;
   form.set('request_id',requestId);
   let path='/api/upload_text';
